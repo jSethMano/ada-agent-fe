@@ -1,0 +1,208 @@
+@import "tailwindcss";
+@import "shadcn/tailwind.css";
+
+/* Three faces, three registers.
+   Newsreader  = authored prose   (headlines, the builder's note, Ada's answers)
+   Geist       = interface        (nav, buttons, labels, the visitor's own messages)
+   Geist Mono  = machine record   (instance path, tool names, JSON, iteration ordinals)
+   Self-hosted via Fontsource. No <link> to Google Fonts. */
+@import "@fontsource-variable/newsreader";
+@import "@fontsource-variable/geist";
+@import "@fontsource-variable/geist-mono";
+
+/* This page ships one theme on purpose (Page Theme Lock), so `dark:` must be
+   class-driven, not media-driven. Without this, Tailwind v4 falls back to
+   `@media (prefers-color-scheme: dark)` and every `dark:*` utility baked into
+   the shadcn primitives fires on a visitor whose OS is in dark mode, giving
+   them dark inputs and buttons on a light page. `.dark` is never set anywhere,
+   so this neutralises them. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme inline {
+  --font-sans: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Newsreader Variable", ui-serif, Georgia, serif;
+  --font-mono: "Geist Mono Variable", ui-monospace, SFMono-Regular, monospace;
+  --font-heading: var(--font-serif);
+
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-rule: var(--rule);
+  --color-rule-strong: var(--rule-strong);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-wash: var(--accent-wash);
+  --color-danger: var(--danger);
+  --color-danger-wash: var(--danger-wash);
+
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  /* Shape lock: one radius for the whole page. 2px reads precise, not friendly.
+     Nothing is ever a pill. shadcn derives sm/md/lg from this single value. */
+  --radius-sm: var(--radius);
+  --radius-md: var(--radius);
+  --radius-lg: var(--radius);
+  --radius-xl: var(--radius);
+  --radius-2xl: var(--radius);
+  --radius-3xl: var(--radius);
+  --radius-4xl: var(--radius);
+}
+
+:root {
+  color-scheme: light;
+
+  /* Contrast ratios measured against --paper (#F6F6F5).
+     ink 16:1 AAA · ink-2 6.5:1 AA · ink-3 4.9:1 AA · accent 7.4:1 · danger 6.6:1 */
+  --paper: #f6f6f5;
+  --surface: #fdfdfc;
+  --ink: #17181a;
+  --ink-2: #56585d;
+  --ink-3: #696c73;
+  --rule: #e2e2df;
+  --rule-strong: #c9c9c5;
+
+  /* Ultramarine, not indigo. Flat, never glowing, never gradient.
+     Exactly four jobs: links, the Send button, the active-iteration marker, focus rings. */
+  --accent-ink: #2440c8;
+  --accent-wash: #ebeefb;
+  --danger: #a32b1c;
+  --danger-wash: #faeeec;
+
+  --radius: 2px;
+
+  /* shadcn semantic contract, mapped onto the tokens above so the primitives
+     inherit this design instead of shipping in their default state. */
+  --background: var(--paper);
+  --foreground: var(--ink);
+  --card: var(--surface);
+  --card-foreground: var(--ink);
+  --popover: var(--surface);
+  --popover-foreground: var(--ink);
+  --primary: var(--accent-ink);
+  --primary-foreground: #fdfdfc;
+  --secondary: #ecece9;
+  --secondary-foreground: var(--ink);
+  --muted: #eeeeec;
+  --muted-foreground: var(--ink-3);
+  --accent: var(--accent-wash);
+  --accent-foreground: var(--accent-ink);
+  --destructive: var(--danger);
+  --border: var(--rule);
+  --input: var(--rule-strong);
+  --ring: var(--accent-ink);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    @apply font-sans;
+    -webkit-font-smoothing: antialiased;
+    scrollbar-gutter: stable;
+  }
+
+  body {
+    @apply bg-paper text-ink;
+    font-feature-settings: "cv11";
+  }
+
+  /* One visible focus treatment everywhere, keyboard-only. */
+  :focus-visible {
+    outline: 2px solid var(--accent-ink);
+    outline-offset: 2px;
+    border-radius: 1px;
+  }
+
+  ::selection {
+    background: var(--accent-wash);
+    color: var(--accent-ink);
+  }
+
+  /* Tabular figures for every number in the machine register, so iteration
+     ordinals and timings do not jitter between renders. */
+  code,
+  kbd,
+  pre,
+  samp,
+  .font-mono {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@layer components {
+  /* Disclosure animation. grid-template-rows 0fr -> 1fr is the height-agnostic
+     way to animate a collapse without measuring in JS.
+     Motivated: state transition feedback on the trace rows. */
+  .disclosure {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 180ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .disclosure > * {
+    overflow: hidden;
+  }
+
+  .disclosure[data-state="open"] {
+    grid-template-rows: 1fr;
+  }
+}
+
+/* The only keyframe on the page: the in-flight indicator.
+   Motivated: feedback that a request is open. Reduced motion gets a static label
+   instead (see PendingTurn), so this never needs to degrade in place. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes ada-tick {
+    0%,
+    80%,
+    100% {
+      opacity: 0.2;
+    }
+    40% {
+      opacity: 1;
+    }
+  }
+
+  .ada-tick > span {
+    animation: ada-tick 1.4s ease-in-out infinite;
+  }
+
+  .ada-tick > span:nth-child(2) {
+    animation-delay: 0.16s;
+  }
+
+  .ada-tick > span:nth-child(3) {
+    animation-delay: 0.32s;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

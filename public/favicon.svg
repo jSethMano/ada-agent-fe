@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Ada">
+  <rect width="32" height="32" fill="#17181a" />
+  <text
+    x="16"
+    y="23"
+    text-anchor="middle"
+    font-family="Newsreader, Georgia, 'Times New Roman', serif"
+    font-size="22"
+    font-weight="500"
+    fill="#f6f6f5"
+  >A</text>
+</svg>
