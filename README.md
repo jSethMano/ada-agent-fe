@@ -13,36 +13,25 @@ request and the real response.
 
 ## Running it locally
 
-This app needs the Worker running alongside it. One command starts both:
-
 ```bash
 npm install && npm run dev
 ```
 
-- **web** on <http://localhost:5173>
-- **worker** on `http://localhost:8787`, from the sibling repo [`ada-agent`](../ada-agent)
+Vite serves on <http://localhost:5173>. This starts the front end only.
 
-Ctrl-C stops both. Workers AI bindings always reach remote resources, so the Worker needs a
-Cloudflare login and may incur usage.
-
-| Script | Does |
-| --- | --- |
-| `npm run dev` | Both processes |
-| `npm run dev:web` | Vite only. Every question shows the Worker-unreachable error state. |
-| `npm run dev:worker` | Worker only |
-
-If the Worker lives somewhere other than `../ada-agent`:
+The Ada Worker is a separate service that you run (or deploy) on its own. Point this app at it with
+`ADA_WORKER_ORIGIN`, which defaults to `http://localhost:8787`:
 
 ```bash
-ADA_WORKER_DIR=/path/to/ada-agent npm run dev
+ADA_WORKER_ORIGIN=https://ada-agent.example.workers.dev npm run dev
 ```
 
-### Why the Worker port is pinned
+If the Worker is not reachable, the page still runs and every question shows an inline
+Worker-unreachable error with a retry, rather than failing silently.
 
-`scripts/dev-worker.sh` always passes `--port 8787` because `vite.config.ts` proxies `/agents`
-there. Plain `wrangler dev` silently picks the next free port when 8787 is taken, which leaves the
-proxy pointing at nothing and every question failing with a 502. Pinning it turns that into an
-obvious "address in use" error instead.
+> When running the Worker locally, the port has to match `ADA_WORKER_ORIGIN`. `wrangler dev`
+> silently picks the next free port when the default is taken, which leaves this app proxying to
+> nothing and every question returning 502. Pass `--port` explicitly.
 
 ### Why there is a proxy
 
@@ -61,15 +50,36 @@ ADA_WORKER_ORIGIN=http://localhost:9000 npm run dev
 
 ## Configuration
 
+`.env` holds the committed defaults. Create `.env.local` (gitignored) to point at a different
+environment without touching a tracked file; it wins over `.env`.
+
 | Variable | Default | Meaning |
 | --- | --- | --- |
-| `VITE_API_BASE_URL` | `""` (same origin) | Prefix for the agent call. Empty routes through the Vite proxy. |
-| `ADA_WORKER_ORIGIN` | `http://localhost:8787` | Proxy target. Build-time only, not shipped to the client. |
-| `ADA_WORKER_DIR` | `../ada-agent` | Where `npm run dev` looks for the Worker repo. |
-| `ADA_WORKER_PORT` | `8787` | Port the Worker binds to. Change `ADA_WORKER_ORIGIN` to match. |
+| `ADA_WORKER_ORIGIN` | `http://localhost:8787` | Dev-proxy target. Server-side only, never shipped to the client. Ignored when `VITE_API_BASE_URL` is set. |
+| `VITE_API_BASE_URL` | `""` (same origin) | Prefix the browser puts on the agent call. Empty means "call my own origin", which is what routes through the proxy. Inlined at build time. |
 
-Copy `.env.example` to `.env.local` to override. To bypass the proxy and call the Worker directly,
-set `VITE_API_BASE_URL=http://localhost:8787` **and** enable CORS on the Worker (below).
+### Switching environments
+
+**Through the proxy** (default). The browser calls this app's origin and Vite forwards `/agents`.
+Same-origin, so no CORS is needed, and it works against a deployed Worker just as well as a local
+one. Dev server only.
+
+```bash
+# .env.local
+ADA_WORKER_ORIGIN=https://ada-agent.<your-subdomain>.workers.dev
+VITE_API_BASE_URL=
+```
+
+**Direct from the browser.** The proxy is skipped entirely. Requires CORS on the Worker, and is the
+only option for a production build since there is no dev server to proxy through.
+
+```bash
+# .env.local
+VITE_API_BASE_URL=https://ada-agent.<your-subdomain>.workers.dev
+```
+
+Restart the dev server after editing either file. `vite.config.ts` reads them through Vite's
+`loadEnv` at startup, not per request.
 
 ---
 
