@@ -10,7 +10,9 @@ const GROUPS: Group[] = [
       'Router agent with a five-pass tool-calling loop',
       'IT sub-agent reachable over a cross-Durable-Object fetch',
       'Per-instance memory, scoped by the URL path segment',
+      'Tickets you file persist in the sub-agent and survive across conversations',
       'Full tool trace returned to the client and rendered on this page',
+      'Rate limited to 10 requests per minute per IP',
     ],
   },
   {
@@ -25,9 +27,9 @@ const GROUPS: Group[] = [
   {
     label: 'known limits',
     items: [
-      'Ticket records are fixtures. Created tickets are not persisted.',
+      'Tickets 42 and 77 are seeded fixtures, not records from a real system.',
       'No auth. The instance id is a memory scope, not a credential.',
-      'The Worker sends no CORS headers, so local dev proxies through Vite.',
+      'The Worker sends no CORS headers. Dev proxies through Vite, production through a service binding.',
       'No evals yet. Tool selection is still verified by hand.',
     ],
   },

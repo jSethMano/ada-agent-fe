@@ -47,8 +47,9 @@ export function BuildersNote() {
             <div>
               <dt className="font-mono text-[12px] text-ink">ticket data</dt>
               <dd className="mt-0.5 text-ink-2">
-                Fixtures. Tickets 42 and 77 are hardcoded in the IT sub-agent. New tickets get a
-                random id and are not stored anywhere.
+                Half real. Tickets 42 and 77 are seeded fixtures, but anything you file is written
+                to the IT sub-agent’s own storage and can be looked up afterwards, including from a
+                different conversation.
               </dd>
             </div>
           </dl>
