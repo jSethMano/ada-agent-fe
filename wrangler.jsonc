@@ -1,0 +1,25 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "ada",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-09-20",
+  "observability": { "enabled": true },
+
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+
+    // Single-page app: no server-side routes, so any unmatched path returns
+    // index.html and React renders from there.
+    "not_found_handling": "single-page-application",
+
+    // Without this, SPA fallback would answer /agents/* with index.html and the
+    // Worker script would never run. Limiting it to /agents/* means static
+    // assets are served straight from the asset worker with no script in front.
+    "run_worker_first": ["/agents/*"]
+  },
+
+  // The agent lives in the sibling repo and deploys separately. Binding to it
+  // by name keeps the call internal, so no CORS is needed anywhere.
+  "services": [{ "binding": "ADA", "service": "ada-agent" }]
+}

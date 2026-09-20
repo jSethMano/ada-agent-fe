@@ -144,58 +144,59 @@ feedback. No animation library. Everything collapses under `prefers-reduced-moti
 
 ---
 
-## Deploying to Cloudflare
+## Deployed
 
-Not executed here. These are the steps.
+**<https://ada.joshuaseth11.workers.dev>**
 
-### 1. Enable CORS on the Worker
+Two Workers, one public origin. The browser only ever talks to `ada`; the agent is reached over an
+internal service binding, so CORS never enters the picture.
 
-Production is cross-origin, so the proxy no longer helps. In `ada-agent/src/index.ts`:
-
-```ts
-export default {
-  fetch: async (request, env) =>
-    (await routeAgentRequest(request, env, {
-      cors: { origin: ['https://your-pages-domain.pages.dev'] },
-    })) ?? new Response('Not found', { status: 404 }),
-} satisfies ExportedHandler<Env>
+```
+browser ──> ada  (Worker + static assets)
+              │
+              ├── /agents/*        ──(service binding)──> ada-agent ──> Ada DO ──> Workers AI
+              │                                                     └──> ItAgent DO
+              └── everything else  ──> dist/
 ```
 
-Check the option shape against the `agents` version in `ada-agent/package.json` before relying on
-it; passing `cors: true` to allow all origins is the permissive fallback.
+This is the production equivalent of the dev proxy, so dev and production behave identically and
+`VITE_API_BASE_URL` stays empty in both.
 
-### 2. Build with the Worker URL
+| Worker | Config | Role |
+| --- | --- | --- |
+| `ada` | `wrangler.jsonc` here | Serves `dist/`, forwards `/agents/*` |
+| `ada-agent` | sibling repo | Durable Objects, tool loop, Workers AI |
+
+### Deploying changes
+
+The agent must exist before the service binding can resolve, so on a first deploy it goes first.
 
 ```bash
-VITE_API_BASE_URL=https://ada-agent.<your-subdomain>.workers.dev npm run build
+cd ../ada-agent && npx wrangler deploy
 ```
 
-Output lands in `dist/`.
-
-### 3. Publish
-
-Cloudflare Pages, direct upload:
+Then the front end, which builds and uploads in one step:
 
 ```bash
-npx wrangler pages deploy dist --project-name ada-agent-fe
+npm run deploy
 ```
 
-Or via Workers Static Assets, by adding to a `wrangler.jsonc` in this repo:
+### How the routing works
 
-```jsonc
-{
-  "name": "ada-agent-fe",
-  "compatibility_date": "2026-09-18",
-  "assets": { "directory": "./dist", "not_found_handling": "single-page-application" }
-}
+`assets.run_worker_first` is set to `["/agents/*"]`. Without it, `not_found_handling:
+single-page-application` would answer `/agents/*` with `index.html` and `worker/index.ts` would
+never run. Scoping it to `/agents/*` means static files are served straight from the asset worker
+with no script in front of them.
+
+After changing `wrangler.jsonc`, regenerate binding types:
+
+```bash
+npm run cf-typegen
 ```
 
-then `npx wrangler deploy`.
+### Why not Pages plus CORS
 
-Set `VITE_API_BASE_URL` as a build-time variable in the Pages dashboard for git-triggered builds.
-It is inlined at build time, so changing it requires a rebuild, not just a redeploy.
-
-### Alternative: same-origin, no CORS
-
-Serve this app from a Worker that also routes `/agents/*` to the agent handler. Same origin means
-no CORS and no `VITE_API_BASE_URL`. More wiring, fewer moving parts in production.
+Pages would leave the browser calling a second origin, which means getting CORS right on the Worker
+including the preflight that a JSON POST triggers, plus setting `VITE_API_BASE_URL` at build time
+and rebuilding whenever it changes. The service binding removes all of that and keeps the agent off
+the public path.
