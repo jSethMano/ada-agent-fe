@@ -11,15 +11,17 @@ export function SiteFooter() {
             An internal helpdesk agent running on Cloudflare Workers. Built as a working reference
             for how a router agent, sub-agents, and a tool loop fit together.
           </p>
-          <a
-            href={SITE.githubUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="mt-4 inline-flex items-center gap-1 text-[13.5px] text-accent-ink underline-offset-4 hover:underline"
-          >
-            Read the Worker source
-            <ArrowUpRightIcon aria-hidden weight="bold" className="size-3" />
-          </a>
+          {SITE.githubUrl && (
+            <a
+              href={SITE.githubUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-4 inline-flex items-center gap-1 text-[13.5px] text-accent-ink underline-offset-4 hover:underline"
+            >
+              Read the Worker source
+              <ArrowUpRightIcon aria-hidden weight="bold" className="size-3" />
+            </a>
+          )}
         </div>
 
         <div className="grid gap-x-8 gap-y-8 sm:grid-cols-2">

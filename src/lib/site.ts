@@ -5,8 +5,14 @@
  * retyped from memory, so the page cannot quietly drift from the Worker.
  */
 export const SITE = {
-  /** Replace with the real repository before sending this to anyone. */
-  githubUrl: 'https://github.com/sethmano/ada-agent',
+  /**
+   * Repository link, rendered as "Source" in the masthead and footer.
+   *
+   * Empty on purpose until the repo is public. A link that 404s on a page
+   * someone was invited to look at is worse than no link, so both call sites
+   * hide themselves when this is empty rather than shipping a dead one.
+   */
+  githubUrl: '' as string,
 
   /** Currently active in the Worker. The 70b fp8-fast model is commented out
    *  directly above it, kept as the fallback if scout regresses on tool calls. */

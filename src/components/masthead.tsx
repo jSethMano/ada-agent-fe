@@ -25,15 +25,17 @@ export function Masthead() {
           >
             Status
           </a>
-          <a
-            href={SITE.githubUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center gap-1 text-[13.5px] text-accent-ink underline-offset-4 transition-colors hover:underline"
-          >
-            Source
-            <ArrowUpRightIcon aria-hidden weight="bold" className="size-3" />
-          </a>
+          {SITE.githubUrl && (
+            <a
+              href={SITE.githubUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1 text-[13.5px] text-accent-ink underline-offset-4 transition-colors hover:underline"
+            >
+              Source
+              <ArrowUpRightIcon aria-hidden weight="bold" className="size-3" />
+            </a>
+          )}
         </nav>
       </div>
     </header>
