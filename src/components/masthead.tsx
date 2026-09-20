@@ -1,5 +1,5 @@
 import { ArrowUpRightIcon } from '@phosphor-icons/react'
-import { SITE } from '@/lib/site'
+import { PUBLISHED_REPOS } from '@/lib/site'
 
 export function Masthead() {
   return (
@@ -25,9 +25,10 @@ export function Masthead() {
           >
             Status
           </a>
-          {SITE.githubUrl && (
+          {/* The Worker repo is the interesting one to a reviewer, so it leads. */}
+          {PUBLISHED_REPOS.length > 0 && (
             <a
-              href={SITE.githubUrl}
+              href={PUBLISHED_REPOS[0].url}
               target="_blank"
               rel="noreferrer"
               className="inline-flex items-center gap-1 text-[13.5px] text-accent-ink underline-offset-4 transition-colors hover:underline"

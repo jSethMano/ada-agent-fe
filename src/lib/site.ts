@@ -5,15 +5,6 @@
  * retyped from memory, so the page cannot quietly drift from the Worker.
  */
 export const SITE = {
-  /**
-   * Repository link, rendered as "Source" in the masthead and footer.
-   *
-   * Empty on purpose until the repo is public. A link that 404s on a page
-   * someone was invited to look at is worse than no link, so both call sites
-   * hide themselves when this is empty rather than shipping a dead one.
-   */
-  githubUrl: '' as string,
-
   /** Currently active in the Worker. The 70b fp8-fast model is commented out
    *  directly above it, kept as the fallback if scout regresses on tool calls. */
   model: '@cf/meta/llama-4-scout-17b-16e-instruct',
@@ -24,6 +15,28 @@ export const SITE = {
 
   agentsSdkVersion: '0.23.0',
 } as const
+
+/**
+ * Source repositories, rendered in the masthead and footer.
+ *
+ * An entry with an empty `url` is skipped everywhere rather than rendered as a
+ * dead link. Both call sites render nothing at all when no repo has a url, so
+ * an unpublished repo degrades to a missing link instead of a 404 on a page
+ * someone was specifically invited to look at.
+ *
+ * A private repo will still 404 for visitors. These have to be public.
+ */
+export interface Repo {
+  label: string
+  url: string
+}
+
+export const REPOS: readonly Repo[] = [
+  { label: 'Worker and agent loop', url: 'https://github.com/jSethMano/ada-agent' },
+  { label: 'This page', url: 'https://github.com/jSethMano/ada-agent-fe' },
+]
+
+export const PUBLISHED_REPOS = REPOS.filter((repo) => repo.url !== '')
 
 export const STACK: ReadonlyArray<{ label: string; detail: string }> = [
   { label: 'Cloudflare Workers', detail: 'runtime' },
