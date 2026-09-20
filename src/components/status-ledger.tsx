@@ -11,6 +11,7 @@ const GROUPS: Group[] = [
       'IT sub-agent reachable over a cross-Durable-Object fetch',
       'Per-instance memory, scoped by the URL path segment',
       'Tickets you file persist in the sub-agent and survive across conversations',
+      'Past conversations kept in the browser, traces and all, and resumable',
       'Full tool trace returned to the client and rendered on this page',
       'Rate limited to 10 requests per minute per IP',
     ],

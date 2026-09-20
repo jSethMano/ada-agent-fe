@@ -6,7 +6,8 @@ import { Composer } from './composer'
 import { SUGGESTED_PROMPTS } from './suggested-prompts'
 import { TurnView } from './turn'
 import { useAsk } from './use-ask'
-import { useSession } from './use-session'
+import { ConversationMenu } from './conversation-menu'
+import { useConversations } from './use-conversations'
 
 function EmptyState({ onPick }: { onPick: (prompt: string) => void }) {
   return (
@@ -36,23 +37,21 @@ function EmptyState({ onPick }: { onPick: (prompt: string) => void }) {
 }
 
 export function AdaConsole() {
-  const { instance, resetSession } = useSession()
-  const { turns, submit, retry, clear, isPending } = useAsk(instance)
+  const { active, history, setActiveTurns, startNew, switchTo, remove } = useConversations()
+  const { instance, turns } = active
+  const { submit, retry, isPending } = useAsk(instance, turns, setActiveTurns)
   const threadRef = useRef<HTMLDivElement>(null)
 
   // Keep the newest turn in view. The pending row and the answered row are the
   // same element, so this fires once per turn rather than jumping twice.
+  // Also fires on a conversation switch, which is what puts a restored
+  // transcript at its most recent message rather than the top.
   useEffect(() => {
     const thread = threadRef.current
     if (!thread || turns.length === 0) return
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     thread.scrollTo({ top: thread.scrollHeight, behavior: reduce ? 'auto' : 'smooth' })
-  }, [turns])
-
-  const startNewConversation = () => {
-    resetSession()
-    clear()
-  }
+  }, [turns, instance])
 
   return (
     <section
@@ -64,15 +63,18 @@ export function AdaConsole() {
           <span className="font-mono text-[10.5px] whitespace-nowrap text-ink-3">memory scope</span>
           <code className="truncate font-mono text-[12px] text-ink-2">{instancePath(instance)}</code>
         </p>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={startNewConversation}
-          className="font-mono text-[11.5px]"
-        >
-          <PlusIcon aria-hidden weight="bold" />
-          New conversation
-        </Button>
+        <div className="flex items-center gap-2">
+          <ConversationMenu
+            history={history}
+            activeInstance={instance}
+            onSelect={switchTo}
+            onRemove={remove}
+          />
+          <Button variant="outline" size="sm" onClick={startNew} className="font-mono text-[11.5px]">
+            <PlusIcon aria-hidden weight="bold" />
+            New
+          </Button>
+        </div>
       </header>
 
       <div ref={threadRef} className="flex-1 overflow-y-auto">

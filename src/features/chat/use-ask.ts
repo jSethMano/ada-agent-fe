@@ -1,26 +1,32 @@
-import { useCallback, useState } from 'react'
+import { useCallback, type Dispatch, type SetStateAction } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { ask } from '@/lib/api/client'
 import { AdaError, type Turn } from '@/lib/api/types'
 
-let turnCounter = 0
-const nextTurnId = () => `turn-${++turnCounter}`
+const nextTurnId = () => `turn-${crypto.randomUUID()}`
 
 /**
- * Owns the transcript for one session.
+ * Drives one conversation's request lifecycle.
  *
  * The turn is appended as `pending` the moment it is submitted, so the thread
  * never jumps: the row that shows the in-flight indicator is the same row that
- * later shows the answer. TanStack Query handles the request lifecycle; the
- * transcript itself is local state because it is ordered, append-only, and
- * scoped to this mount. The authoritative history lives in the Durable Object.
+ * later shows the answer.
+ *
+ * Turns are passed in rather than held here, because they outlive this hook:
+ * useConversations owns them so they survive a reload and a conversation
+ * switch. Ada's own memory lives in the Durable Object keyed by `instance`.
  */
-export function useAsk(instance: string) {
-  const [turns, setTurns] = useState<Turn[]>([])
-
-  const patchTurn = useCallback((id: string, patch: Partial<Turn>) => {
-    setTurns((prev) => prev.map((turn) => (turn.id === id ? { ...turn, ...patch } : turn)))
-  }, [])
+export function useAsk(
+  instance: string,
+  turns: Turn[],
+  setTurns: Dispatch<SetStateAction<Turn[]>>,
+) {
+  const patchTurn = useCallback(
+    (id: string, patch: Partial<Turn>) => {
+      setTurns((prev) => prev.map((turn) => (turn.id === id ? { ...turn, ...patch } : turn)))
+    },
+    [setTurns],
+  )
 
   const mutation = useMutation({
     mutationKey: ['ada', 'ask', instance],
@@ -68,7 +74,7 @@ export function useAsk(instance: string) {
       setTurns((prev) => [...prev, { id: turnId, question, status: 'pending' }])
       mutation.mutate({ question, turnId })
     },
-    [mutation],
+    [mutation, setTurns],
   )
 
   const retry = useCallback(
@@ -81,7 +87,6 @@ export function useAsk(instance: string) {
     [turns, mutation, patchTurn],
   )
 
-  const clear = useCallback(() => setTurns([]), [])
 
-  return { turns, submit, retry, clear, isPending: mutation.isPending }
+  return { submit, retry, isPending: mutation.isPending }
 }
