@@ -1,7 +1,7 @@
 import { useCallback, type Dispatch, type SetStateAction } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { ask } from '@/lib/api/client'
-import { AdaError, type Turn } from '@/lib/api/types'
+import { ChakError, type Turn } from '@/lib/api/types'
 
 const nextTurnId = () => `turn-${crypto.randomUUID()}`
 
@@ -14,7 +14,7 @@ const nextTurnId = () => `turn-${crypto.randomUUID()}`
  *
  * Turns are passed in rather than held here, because they outlive this hook:
  * useConversations owns them so they survive a reload and a conversation
- * switch. Ada's own memory lives in the Durable Object keyed by `instance`.
+ * switch. Chak's own memory lives in the Durable Object keyed by `instance`.
  */
 export function useAsk(
   instance: string,
@@ -29,14 +29,14 @@ export function useAsk(
   )
 
   const mutation = useMutation({
-    mutationKey: ['ada', 'ask', instance],
+    mutationKey: ['chak', 'ask', instance],
     mutationFn: async ({ question, turnId }: { question: string; turnId: string }) => {
       const startedAt = performance.now()
       try {
         const response = await ask(instance, question)
         return { response, turnId, elapsedMs: Math.round(performance.now() - startedAt) }
       } catch (cause) {
-        if (cause instanceof AdaError) {
+        if (cause instanceof ChakError) {
           // Re-throw with the measured time attached so a failed turn still
           // reports honestly how long it ran before giving up.
           Object.assign(cause, { elapsedMs: Math.round(performance.now() - startedAt) })
@@ -54,13 +54,13 @@ export function useAsk(
       })
     },
     onError: (error: unknown, variables) => {
-      const adaError = error instanceof AdaError ? error : null
+      const chakError = error instanceof ChakError ? error : null
       patchTurn(variables.turnId, {
         status: 'failed',
-        error: adaError?.message ?? (error instanceof Error ? error.message : 'Unknown failure.'),
+        error: chakError?.message ?? (error instanceof Error ? error.message : 'Unknown failure.'),
         // The 500 "exceeded max iterations" path still returns a trace.
-        trace: adaError?.trace ?? [],
-        elapsedMs: (adaError as (AdaError & { elapsedMs?: number }) | null)?.elapsedMs,
+        trace: chakError?.trace ?? [],
+        elapsedMs: (chakError as (ChakError & { elapsedMs?: number }) | null)?.elapsedMs,
       })
     },
   })

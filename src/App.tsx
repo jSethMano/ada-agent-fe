@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { AdaPage } from '@/routes/ada-page'
+import { ChakPage } from '@/routes/chak-page'
 
 // Single page, so no router. Retries are off: a failed agent turn should surface
 // to the visitor immediately with a retry they choose, not be silently repeated.
@@ -13,7 +13,7 @@ const queryClient = new QueryClient({
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AdaPage />
+      <ChakPage />
     </QueryClientProvider>
   )
 }

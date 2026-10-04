@@ -2,13 +2,15 @@
 @import "shadcn/tailwind.css";
 
 /* Three faces, three registers.
-   Newsreader  = authored prose   (headlines, the builder's note, Ada's answers)
-   Geist       = interface        (nav, buttons, labels, the visitor's own messages)
-   Geist Mono  = machine record   (instance path, tool names, JSON, iteration ordinals)
+   Geist Pixel  = authored prose   (headlines, the builder's note, Chak's answers,
+                                    and the small lowercase kickers that head a group)
+   Geist        = interface        (nav, buttons, labels, the visitor's own messages)
+   Geist Mono   = machine record   (instance path, tool names, JSON, iteration ordinals)
+   Geist Pixel ships one weight (400), so nothing set in it asks for font-medium.
    Self-hosted via Fontsource. No <link> to Google Fonts. */
-@import "@fontsource-variable/newsreader";
 @import "@fontsource-variable/geist";
 @import "@fontsource-variable/geist-mono";
+@import "@fontsource-variable/geist-pixel";
 
 /* This page ships one theme on purpose (Page Theme Lock), so `dark:` must be
    class-driven, not media-driven. Without this, Tailwind v4 falls back to
@@ -20,9 +22,9 @@
 
 @theme inline {
   --font-sans: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
-  --font-serif: "Newsreader Variable", ui-serif, Georgia, serif;
   --font-mono: "Geist Mono Variable", ui-monospace, SFMono-Regular, monospace;
-  --font-heading: var(--font-serif);
+  --font-pixel: "Geist Pixel Variable", ui-monospace, SFMono-Regular, monospace;
+  --font-heading: var(--font-pixel);
 
   --color-paper: var(--paper);
   --color-surface: var(--surface);
@@ -70,7 +72,7 @@
   color-scheme: light;
 
   /* Contrast ratios measured against --paper (#F6F6F5).
-     ink 16:1 AAA · ink-2 6.5:1 AA · ink-3 4.9:1 AA · accent 7.4:1 · danger 6.6:1 */
+     ink 16:1 AAA · ink-2 6.5:1 AA · ink-3 4.9:1 AA · accent 5.3:1 AA · danger 7.2:1 */
   --paper: #f6f6f5;
   --surface: #fdfdfc;
   --ink: #17181a;
@@ -79,12 +81,15 @@
   --rule: #e2e2df;
   --rule-strong: #c9c9c5;
 
-  /* Ultramarine, not indigo. Flat, never glowing, never gradient.
-     Exactly four jobs: links, the Send button, the active-iteration marker, focus rings. */
-  --accent-ink: #2440c8;
-  --accent-wash: #ebeefb;
-  --danger: #a32b1c;
-  --danger-wash: #faeeec;
+  /* Marmalade, Chak's coat darkened until it passes AA as text. Flat, never
+     glowing, never gradient. The bright fur orange (#E8772E) is 2.7:1 and lives
+     only in the sprite. Exactly four jobs: links, the Send button, the
+     active-iteration marker, focus rings. */
+  --accent-ink: #a84a0c;
+  --accent-wash: #fbefe6;
+  /* Crimson, pulled away from the accent's hue so an error never reads as a link. */
+  --danger: #a3123a;
+  --danger-wash: #fbecef;
 
   --radius: 2px;
 
@@ -168,31 +173,39 @@
   }
 }
 
-/* The only keyframe on the page: the in-flight indicator.
-   Motivated: feedback that a request is open. Reduced motion gets a static label
-   instead (see PendingTurn), so this never needs to degrade in place. */
+/* The only keyframe on the page: Chak's thinking loop, shown while a request
+   is open. ChakSprite renders four frames as sibling <g>s; each is visible for
+   one quarter of the cycle, staggered by negative delays. Reduced motion never
+   gets the animation, only the first (idle) frame, beside the "routing" label. */
+.chak-think > g + g {
+  visibility: hidden;
+}
+
 @media (prefers-reduced-motion: no-preference) {
-  @keyframes ada-tick {
-    0%,
-    80%,
+  @keyframes chak-think {
+    0% {
+      visibility: visible;
+    }
+    25%,
     100% {
-      opacity: 0.2;
-    }
-    40% {
-      opacity: 1;
+      visibility: hidden;
     }
   }
 
-  .ada-tick > span {
-    animation: ada-tick 1.4s ease-in-out infinite;
+  .chak-think > g {
+    animation: chak-think 1.4s step-end infinite;
   }
 
-  .ada-tick > span:nth-child(2) {
-    animation-delay: 0.16s;
+  .chak-think > g:nth-child(2) {
+    animation-delay: -1.05s;
   }
 
-  .ada-tick > span:nth-child(3) {
-    animation-delay: 0.32s;
+  .chak-think > g:nth-child(3) {
+    animation-delay: -0.7s;
+  }
+
+  .chak-think > g:nth-child(4) {
+    animation-delay: -0.35s;
   }
 }
 

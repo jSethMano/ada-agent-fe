@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { ArrowUpIcon } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
+import { COMPOSER_ID, useComposerDraft } from './composer-draft'
 
 interface ComposerProps {
   onSubmit: (question: string) => void
@@ -9,7 +10,7 @@ interface ComposerProps {
 }
 
 export function Composer({ onSubmit, disabled }: ComposerProps) {
-  const [value, setValue] = useState('')
+  const [value, setValue] = useComposerDraft()
   const ref = useRef<HTMLTextAreaElement>(null)
 
   // Focus on load so a visitor can type immediately, but only where the console
@@ -40,11 +41,11 @@ export function Composer({ onSubmit, disabled }: ComposerProps) {
       >
         {/* No placeholder-as-label: the real label is here for assistive tech and
             the visible affordance is the keyboard hint below. */}
-        <label htmlFor="ada-question" className="sr-only">
-          Ask Ada a question
+        <label htmlFor={COMPOSER_ID} className="sr-only">
+          Ask Chak a question
         </label>
         <Textarea
-          id="ada-question"
+          id={COMPOSER_ID}
           ref={ref}
           rows={1}
           value={value}

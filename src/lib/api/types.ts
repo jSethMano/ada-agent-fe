@@ -1,8 +1,9 @@
 /**
- * Wire types for the Ada Worker.
+ * Wire types for the Chak Worker.
  *
- * Source of truth: ada-agent/src/index.ts, `Ada.onRequest`.
- * Endpoint: POST /agents/ada/{instance}   body: { question }
+ * Source of truth: ada-agent/src/index.ts, `Chak.onRequest`.
+ * Endpoint: POST /agents/chak/{instance}   body: { question }
+ * (The Worker still rewrites the pre-rename /agents/ada/ prefix for one release.)
  *
  * The router loop returns one of three shapes:
  *   200  { answer, iterations, trace }        normal turn
@@ -34,13 +35,13 @@ export interface AskErrorBody {
 
 /** Thrown for any non-2xx response, or a transport failure. Carries the partial
  *  trace when the Worker supplied one so the UI can still show the work. */
-export class AdaError extends Error {
+export class ChakError extends Error {
   readonly status: number
   readonly trace: TraceEntry[]
 
   constructor(message: string, status: number, trace: TraceEntry[] = []) {
     super(message)
-    this.name = 'AdaError'
+    this.name = 'ChakError'
     this.status = status
     this.trace = trace
   }

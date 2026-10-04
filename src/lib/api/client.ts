@@ -1,4 +1,5 @@
-import { AdaError, type AskErrorBody, type AskResponse, type TraceEntry } from './types'
+import { AGENT } from '@/lib/site'
+import { ChakError, type AskErrorBody, type AskResponse, type TraceEntry } from './types'
 
 /**
  * Base URL for the Worker.
@@ -15,7 +16,7 @@ export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? ''
 /** The Durable Object address for a session. Shown verbatim in the console
  *  header, because the path segment *is* the memory boundary. */
 export function instancePath(instance: string): string {
-  return `/agents/ada/${instance}`
+  return `/agents/${AGENT.slug}/${instance}`
 }
 
 function isTraceArray(value: unknown): value is TraceEntry[] {
@@ -45,8 +46,8 @@ export async function ask(
     })
   } catch (cause) {
     if (cause instanceof DOMException && cause.name === 'AbortError') throw cause
-    throw new AdaError(
-      `Could not reach the Ada Worker at ${url || 'this origin'}. Is \`npm run dev\` running in ada-agent?`,
+    throw new ChakError(
+      `Could not reach ${AGENT.name} at ${url || 'this origin'}. Is \`npm run dev\` running in ada-agent?`,
       0,
     )
   }
@@ -60,9 +61,9 @@ export async function ask(
     // (or from Cloudflare in production), with no JSON body to explain itself.
     const gatewayDown = !failure.error && [502, 503, 504].includes(response.status)
 
-    throw new AdaError(
+    throw new ChakError(
       gatewayDown
-        ? `The Ada Worker is not responding (${response.status}). Start it with \`npm run dev\` in the ada-agent repo.`
+        ? `${AGENT.name} is offline: the Worker is not responding (${response.status}). Start it with \`npm run dev\` in the ada-agent repo.`
         : (failure.error ?? `Worker responded ${response.status}.`),
       response.status,
       isTraceArray(failure.trace) ? failure.trace : [],
@@ -71,7 +72,7 @@ export async function ask(
 
   const ok = body as Partial<AskResponse> | null
   if (!ok || typeof ok.answer !== 'string') {
-    throw new AdaError('Worker returned a body without an `answer` field.', response.status)
+    throw new ChakError('Worker returned a body without an `answer` field.', response.status)
   }
 
   return {

@@ -1,10 +1,10 @@
 # ada-agent-fe
 
-Front end for **Ada**, an internal-helpdesk agent running on Cloudflare Workers. A single scrolled
-page: a live chat console with a visible tool-call trace, plus documentation of the architecture
-behind it.
+Front end for **Chak**, an internal-helpdesk agent running on Cloudflare Workers, presented as an
+orange-and-white office cat. A single scrolled page: a live chat console with a visible tool-call
+trace, a list of everything he can do, plus documentation of the architecture behind it.
 
-The point of the page is the trace. Ada is a router agent that decides whether a question needs
+The point of the page is the trace. Chak is a router agent that decides whether a question needs
 data, dispatches tool calls to sub-agents in separate Durable Objects, folds the results back into
 the message list, and runs the model again. Every one of those calls is rendered, with the real
 request and the real response.
@@ -19,7 +19,7 @@ npm install && npm run dev
 
 Vite serves on <http://localhost:5173>. This starts the front end only.
 
-The Ada Worker is a separate service that you run (or deploy) on its own. Point this app at it with
+The Chak Worker (repo: `ada-agent`) is a separate service that you run (or deploy) on its own. Point this app at it with
 `ADA_WORKER_ORIGIN`, which defaults to `http://localhost:8787`:
 
 ```bash
@@ -86,7 +86,7 @@ Restart the dev server after editing either file. `vite.config.ts` reads them th
 ## Backend contract
 
 ```
-POST /agents/ada/{instance}
+POST /agents/chak/{instance}
 { "question": string }
 ```
 
@@ -119,10 +119,14 @@ src/
 
 ### Design notes
 
-One light theme, locked. Three type registers with one rule: **Newsreader** for authored prose
-(headlines, Ada's answers), **Geist** for interface, **Geist Mono** for anything the machine
-emitted. Ultramarine `#2440C8` is the only accent and has exactly four jobs: links, the Send button,
-the multi-pass iteration count, and focus rings. Every radius is 2px.
+One light theme, locked. Three type registers with one rule each: **Geist Pixel** for authored
+prose (headlines, Chak's answers, section kickers), **Geist** for interface, **Geist Mono** for
+anything the machine emitted. Marmalade `#A84A0C` is the only accent and has exactly four jobs:
+links, the Send button, the multi-pass iteration count, and focus rings. Every radius is 2px.
+
+Chak himself is a 16×16 pixel sprite, rendered only at multiples of 16px. His character is a tone,
+kept professional: it lives in the page chrome and never in the trace or in his answers. Full brand
+spec: [`docs/design/chak-brand.md`](docs/design/chak-brand.md).
 
 `dark:` is bound to a class variant that is never applied. Without that, Tailwind v4 falls back to
 `prefers-color-scheme` and the `dark:*` utilities inside the shadcn primitives fire for visitors
@@ -154,7 +158,7 @@ internal service binding, so CORS never enters the picture.
 ```
 browser ──> ada  (Worker + static assets)
               │
-              ├── /agents/*        ──(service binding)──> ada-agent ──> Ada DO ──> Workers AI
+              ├── /agents/*        ──(service binding)──> ada-agent ──> Chak DO ──> Workers AI
               │                                                     └──> ItAgent DO
               └── everything else  ──> dist/
 ```

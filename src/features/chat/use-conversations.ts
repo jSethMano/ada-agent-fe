@@ -1,7 +1,12 @@
 import { useCallback, useEffect, useRef, useState, type Dispatch, type SetStateAction } from 'react'
 import type { Turn } from '@/lib/api/types'
 
-const STORAGE_KEY = 'ada.conversations.v1'
+const STORAGE_KEY = 'chak.conversations.v1'
+/** The same list under its name from before the Ada -> Chak rename. Read as a
+ *  fallback and removed after the first write, so a returning visitor keeps
+ *  their history. The instance ids inside are unchanged, and the Worker's v3
+ *  migration kept the Durable Objects behind them. */
+const RENAMED_STORAGE_KEY = 'ada.conversations.v1'
 /** Pre-history key, read once so an existing visitor keeps their instance. */
 const LEGACY_INSTANCE_KEY = 'ada.instance'
 
@@ -14,7 +19,7 @@ const ALPHABET = '0123456789abcdefghjkmnpqrstvwxyz'
 
 export interface Conversation {
   /** Doubles as the Durable Object instance name, so switching conversations
-   *  switches which memory scope Ada answers from. */
+   *  switches which memory scope Chak answers from. */
   instance: string
   turns: Turn[]
   createdAt: number
@@ -47,7 +52,8 @@ function isConversation(value: unknown): value is Conversation {
 
 function load(): Conversation[] {
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY)
+    const raw =
+      window.localStorage.getItem(STORAGE_KEY) ?? window.localStorage.getItem(RENAMED_STORAGE_KEY)
     if (raw) {
       const parsed: unknown = JSON.parse(raw)
       if (Array.isArray(parsed)) return parsed.filter(isConversation)
@@ -67,7 +73,7 @@ function load(): Conversation[] {
 /**
  * Conversation history, held in the browser.
  *
- * The Durable Object is the source of truth for what Ada *remembers*, but it
+ * The Durable Object is the source of truth for what Chak *remembers*, but it
  * stores only `{ role, content }` message history. It does not keep the tool
  * trace, iteration counts, or roundtrip timings, which are the whole point of
  * this page. So the rendered transcript lives here and the agent's memory lives
@@ -98,6 +104,7 @@ export function useConversations() {
         .sort((a, b) => b.updatedAt - a.updatedAt)
         .slice(0, MAX_CONVERSATIONS)
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(persistable))
+      window.localStorage.removeItem(RENAMED_STORAGE_KEY)
     } catch {
       // Quota exceeded most likely. The session keeps working in memory.
     }

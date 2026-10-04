@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { PlusIcon } from '@phosphor-icons/react'
+import { ChakSprite } from '@/components/chak-sprite'
 import { Button } from '@/components/ui/button'
 import { instancePath } from '@/lib/api/client'
 import { Composer } from './composer'
@@ -12,10 +13,13 @@ import { useConversations } from './use-conversations'
 function EmptyState({ onPick }: { onPick: (prompt: string) => void }) {
   return (
     <div className="px-4 py-5 sm:px-6">
-      <p className="max-w-[46ch] text-[14px] leading-relaxed text-ink-2">
-        Four prompts, four different paths through the router. The last one is the one to watch:
-        Ada answers it without calling a tool at all.
-      </p>
+      <div className="flex items-start gap-4">
+        <ChakSprite size={48} />
+        <p className="max-w-[46ch] text-[14px] leading-relaxed text-ink-2">
+          Four prompts, four different paths through the router. The last one is the one to
+          watch: Chak answers it without calling a tool at all.
+        </p>
+      </div>
       <ul className="mt-4 grid gap-px bg-rule">
         {SUGGESTED_PROMPTS.map((prompt) => (
           <li key={prompt.text}>
@@ -36,7 +40,7 @@ function EmptyState({ onPick }: { onPick: (prompt: string) => void }) {
   )
 }
 
-export function AdaConsole() {
+export function ChakConsole() {
   const { active, history, setActiveTurns, startNew, switchTo, remove } = useConversations()
   const { instance, turns } = active
   const { submit, retry, isPending } = useAsk(instance, turns, setActiveTurns)
@@ -55,7 +59,7 @@ export function AdaConsole() {
 
   return (
     <section
-      aria-label="Chat with Ada"
+      aria-label="Chat with Chak"
       className="flex min-h-[32rem] flex-col border border-rule bg-surface lg:h-[min(72vh,42rem)]"
     >
       <header className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-rule px-4 py-2.5 sm:px-6">

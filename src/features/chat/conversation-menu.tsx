@@ -50,13 +50,13 @@ export function ConversationMenu({
         align="end"
         className="w-[min(22rem,calc(100vw-2rem))] border-rule bg-surface p-0"
       >
-        <p className="border-b border-rule px-3 py-2 font-mono text-[10.5px] tracking-wide text-ink-3">
+        <p className="border-b border-rule px-3 py-2 font-pixel text-[10.5px] tracking-wide text-ink-3">
           past conversations
         </p>
 
         {history.length === 0 ? (
           <p className="px-3 py-4 text-[13px] leading-relaxed text-ink-2">
-            Nothing yet. Conversations appear here once you have asked Ada something, and stay in
+            Nothing yet. Conversations appear here once you have asked Chak something, and stay in
             this browser.
           </p>
         ) : (
@@ -116,7 +116,7 @@ export function ConversationMenu({
         )}
 
         <p className="border-t border-rule px-3 py-2 text-[11.5px] leading-relaxed text-ink-3">
-          Transcripts are stored in this browser. Ada's own memory lives in the Durable Object named
+          Transcripts are stored in this browser. Chak's own memory lives in the Durable Object named
           by each instance.
         </p>
       </PopoverContent>

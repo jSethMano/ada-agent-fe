@@ -42,7 +42,7 @@ export function StatusLedger() {
       <div className="mx-auto max-w-[1240px] px-5 py-16 sm:px-8 lg:py-24">
         <h2
           id="status-heading"
-          className="font-serif text-[30px] leading-[1.15] font-medium tracking-tight text-ink sm:text-[36px]"
+          className="font-pixel text-[30px] leading-[1.15] text-ink sm:text-[36px]"
         >
           Where it stands
         </h2>
@@ -50,7 +50,7 @@ export function StatusLedger() {
         <div className="mt-10 grid gap-x-10 gap-y-10 lg:grid-cols-3">
           {GROUPS.map((group) => (
             <div key={group.label}>
-              <h3 className="border-b border-rule-strong pb-2 font-mono text-[11px] tracking-wide text-ink-3">
+              <h3 className="border-b border-rule-strong pb-2 font-pixel text-[11px] tracking-wide text-ink-3">
                 {group.label}
               </h3>
               <ul className="mt-4 space-y-3.5">

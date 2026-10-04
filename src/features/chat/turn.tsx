@@ -1,5 +1,7 @@
-import { ArrowClockwiseIcon, WarningIcon } from '@phosphor-icons/react'
+import { ArrowClockwiseIcon } from '@phosphor-icons/react'
+import { ChakSprite } from '@/components/chak-sprite'
 import { Button } from '@/components/ui/button'
+import { SITE } from '@/lib/site'
 import { Answer } from './answer'
 import { Trace } from './trace'
 import type { Turn } from '@/lib/api/types'
@@ -7,7 +9,7 @@ import type { Turn } from '@/lib/api/types'
 /** The speaker label sits in a fixed mono gutter so the thread reads as a
  *  transcript rather than a stack of chat bubbles. Alternating bubbles are the
  *  single clearest "chatbot playground" signal, and this is a tool. */
-function Gutter({ speaker }: { speaker: 'you' | 'ada' }) {
+function Gutter({ speaker }: { speaker: 'you' | 'chak' }) {
   return (
     <span className="pt-0.5 font-mono text-[11px] tracking-wide text-ink-3 select-none">
       {speaker}
@@ -15,7 +17,7 @@ function Gutter({ speaker }: { speaker: 'you' | 'ada' }) {
   )
 }
 
-function Row({ speaker, children }: { speaker: 'you' | 'ada'; children: React.ReactNode }) {
+function Row({ speaker, children }: { speaker: 'you' | 'chak'; children: React.ReactNode }) {
   return (
     <div className="grid grid-cols-[2.75rem_1fr] gap-x-3 px-4 py-4 sm:grid-cols-[3.5rem_1fr] sm:gap-x-4 sm:px-6">
       <Gutter speaker={speaker} />
@@ -33,16 +35,12 @@ export function TurnView({ turn, onRetry }: { turn: Turn; onRetry: (id: string) 
         <p className="text-[15px] leading-relaxed text-ink">{turn.question}</p>
       </Row>
 
-      <Row speaker="ada">
+      <Row speaker="chak">
         {turn.status === 'pending' && (
           <div role="status" className="flex items-center gap-2">
-            <span aria-hidden className="ada-tick flex items-center gap-1">
-              <span className="size-1 bg-ink-3" />
-              <span className="size-1 bg-ink-3" />
-              <span className="size-1 bg-ink-3" />
-            </span>
+            <ChakSprite thinking size={16} />
             <span className="font-mono text-[11.5px] text-ink-3">routing</span>
-            <span className="sr-only">Ada is working on your question.</span>
+            <span className="sr-only">Chak is working on your question.</span>
           </div>
         )}
 
@@ -53,7 +51,7 @@ export function TurnView({ turn, onRetry }: { turn: Turn; onRetry: (id: string) 
               iterations={turn.iterations}
               elapsedMs={turn.elapsedMs}
             />
-            {/* Ada's prose is set in the serif; everything the machine emits is
+            {/* Chak's prose is set in Geist Pixel; everything the machine emits is
                 mono. The typography carries the human/machine boundary so the
                 trace needs no coloured container to read as a different thing. */}
             <Answer text={turn.answer ?? ''} />
@@ -70,10 +68,20 @@ export function TurnView({ turn, onRetry }: { turn: Turn; onRetry: (id: string) 
               />
             )}
             <div className="mt-3 border-l-2 border-danger bg-danger-wash px-3 py-2.5">
-              <p className="flex items-start gap-2 text-[13.5px] leading-relaxed text-danger">
-                <WarningIcon aria-hidden weight="fill" className="mt-0.5 size-3.5 shrink-0" />
-                <span>{turn.error}</span>
-              </p>
+              <div className="flex items-start gap-2">
+                <ChakSprite pose="ears-back" size={16} className="mt-0.5" />
+                <div className="min-w-0 text-[13.5px] leading-relaxed text-danger">
+                  {/* The plain-English line is ours; the Worker's own error stays
+                      underneath, verbatim, because the record is never rewritten. */}
+                  {overran && (
+                    <p>
+                      Chak stopped after {SITE.maxIterations} passes without settling on an answer.
+                      Everything he tried is above.
+                    </p>
+                  )}
+                  <p className={overran ? 'mt-1 font-mono text-[11.5px]' : undefined}>{turn.error}</p>
+                </div>
+              </div>
               <Button
                 variant="outline"
                 size="sm"

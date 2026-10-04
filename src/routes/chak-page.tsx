@@ -1,11 +1,13 @@
 import { Architecture } from '@/components/architecture'
 import { BuildersNote } from '@/components/builders-note'
+import { Capabilities } from '@/components/capabilities'
+import { ChakSprite } from '@/components/chak-sprite'
 import { Masthead } from '@/components/masthead'
 import { SiteFooter } from '@/components/site-footer'
 import { StatusLedger } from '@/components/status-ledger'
-import { AdaConsole } from '@/features/chat/console'
+import { ChakConsole } from '@/features/chat/console'
 
-export function AdaPage() {
+export function ChakPage() {
   return (
     <div id="top" className="min-h-[100dvh]">
       <a
@@ -19,28 +21,35 @@ export function AdaPage() {
 
       <main>
         {/* Asymmetric split. The console sits in the first viewport on purpose:
-            a stranger should be able to ask Ada something without scrolling. */}
+            a stranger should be able to ask Chak something without scrolling. */}
         <section
           aria-labelledby="hero-heading"
           className="mx-auto grid max-w-[1240px] gap-x-12 gap-y-8 px-5 pt-10 pb-16 sm:px-8 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:items-center lg:pt-16 lg:pb-20"
         >
           <div>
+            {/* 64px on small screens so the console stays close to the fold;
+                both sizes are whole multiples of the 16px grid. */}
+            <ChakSprite size={64} className="mb-6 lg:size-32" />
             <h1
               id="hero-heading"
-              className="font-serif text-[40px] leading-[1.08] font-medium tracking-[-0.02em] text-ink sm:text-[52px] lg:text-[46px] xl:text-[54px]"
+              className="font-pixel text-[40px] leading-[1.08] text-ink sm:text-[52px] lg:text-[46px] xl:text-[54px]"
             >
-              An agent that shows its work.
+              A helpdesk cat who shows his work.
             </h1>
-            <p className="mt-5 max-w-[42ch] font-serif text-[17px] leading-[1.6] text-ink-2 sm:text-[18px]">
-              I built Ada to route helpdesk questions to sub-agents that hold real tools. Every tool
-              call stays visible.
+            <p className="mt-5 max-w-[42ch] font-pixel text-[17px] leading-[1.6] text-ink-2 sm:text-[18px]">
+              I built Chak, an orange-and-white office cat, to route helpdesk questions to
+              sub-agents that hold real tools. Every tool call stays visible.
             </p>
           </div>
 
           <div id="console" className="scroll-mt-20">
-            <AdaConsole />
+            <ChakConsole />
           </div>
         </section>
+
+        <div id="capabilities" className="scroll-mt-16">
+          <Capabilities />
+        </div>
 
         <BuildersNote />
 

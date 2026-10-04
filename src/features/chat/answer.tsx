@@ -22,7 +22,9 @@ function renderInline(text: string, keyPrefix: string): ReactNode[] {
 
     if (token.startsWith('**') && token.endsWith('**')) {
       return (
-        <strong key={key} className="font-medium text-ink">
+        // Geist Pixel has no bold, so this relies on the browser synthesising one.
+        // font-medium (500) would match the 400 face and render no emphasis at all.
+        <strong key={key} className="font-semibold text-ink">
           {token.slice(2, -2)}
         </strong>
       )
@@ -62,7 +64,7 @@ export function Answer({ text }: { text: string }) {
   const paragraphs = text.trim().split(/\n{2,}/)
 
   return (
-    <div className="mt-3 space-y-3 font-serif text-[17px] leading-[1.6] text-ink">
+    <div className="mt-3 space-y-3 font-pixel text-[17px] leading-[1.6] text-ink">
       {paragraphs.map((paragraph, pIndex) => (
         <p key={pIndex}>
           {paragraph.split('\n').map((line, lIndex) => (

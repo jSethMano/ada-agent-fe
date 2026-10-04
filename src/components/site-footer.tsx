@@ -1,4 +1,5 @@
 import { ArrowUpRightIcon } from '@phosphor-icons/react'
+import { ChakSprite } from '@/components/chak-sprite'
 import { PUBLISHED_REPOS, SITE, STACK } from '@/lib/site'
 
 export function SiteFooter() {
@@ -6,7 +7,10 @@ export function SiteFooter() {
     <footer className="border-t border-rule bg-surface">
       <div className="mx-auto grid max-w-[1240px] gap-x-10 gap-y-10 px-5 py-14 sm:px-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
         <div>
-          <p className="font-serif text-[20px] font-medium text-ink">Ada</p>
+          <p className="flex items-center gap-2.5 font-pixel text-[20px] text-ink">
+            <ChakSprite size={32} />
+            chak
+          </p>
           <p className="mt-2 max-w-[44ch] text-[13.5px] leading-relaxed text-ink-2">
             An internal helpdesk agent running on Cloudflare Workers. Built as a working reference
             for how a router agent, sub-agents, and a tool loop fit together.
@@ -32,7 +36,7 @@ export function SiteFooter() {
 
         <div className="grid gap-x-8 gap-y-8 sm:grid-cols-2">
           <div>
-            <h2 className="border-b border-rule pb-2 font-mono text-[10.5px] tracking-wide text-ink-3">
+            <h2 className="border-b border-rule pb-2 font-pixel text-[10.5px] tracking-wide text-ink-3">
               stack
             </h2>
             <ul className="mt-3 space-y-1.5">
@@ -48,7 +52,7 @@ export function SiteFooter() {
           </div>
 
           <div>
-            <h2 className="border-b border-rule pb-2 font-mono text-[10.5px] tracking-wide text-ink-3">
+            <h2 className="border-b border-rule pb-2 font-pixel text-[10.5px] tracking-wide text-ink-3">
               inference
             </h2>
             <dl className="mt-3 space-y-2.5 text-[13px]">

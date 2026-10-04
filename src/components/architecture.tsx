@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils'
-import { SITE } from '@/lib/site'
+import { AGENT, SITE } from '@/lib/site'
 
 interface SubAgent {
   name: string
@@ -82,11 +82,11 @@ export function Architecture() {
       <div className="mx-auto max-w-[1240px] px-5 py-16 sm:px-8 lg:py-24">
         <h2
           id="architecture-heading"
-          className="font-serif text-[30px] leading-[1.15] font-medium tracking-tight text-ink sm:text-[36px]"
+          className="font-pixel text-[30px] leading-[1.15] text-ink sm:text-[36px]"
         >
           One router, three sub-agents
         </h2>
-        <p className="mt-4 max-w-[62ch] font-serif text-[17px] leading-[1.65] text-ink-2">
+        <p className="mt-4 max-w-[62ch] font-pixel text-[17px] leading-[1.65] text-ink-2">
           Every box below is a Durable Object. The router holds no tools; the sub-agents hold no
           conversation. That split is what makes each one testable on its own.
         </p>
@@ -94,7 +94,9 @@ export function Architecture() {
         <div className="mt-12">
           {/* Tier 0: the request */}
           <div className="mx-auto max-w-md border border-rule bg-paper px-4 py-3 text-center">
-            <p className="font-mono text-[12px] text-ink">POST /agents/ada/{'{instance}'}</p>
+            <p className="font-mono text-[12px] text-ink">
+              POST /agents/{AGENT.slug}/{'{instance}'}
+            </p>
             <p className="mt-1 font-mono text-[11px] text-ink-3">{'{ question: string }'}</p>
           </div>
 
@@ -103,7 +105,7 @@ export function Architecture() {
           {/* Tier 1: the router */}
           <div className="mx-auto max-w-2xl border-2 border-ink bg-paper px-5 py-4">
             <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-              <h3 className="font-serif text-[20px] font-medium text-ink">Ada</h3>
+              <h3 className="font-pixel text-[20px] text-ink">{AGENT.name}</h3>
               <p className="font-mono text-[11px] text-ink-3">Durable Object, one per instance</p>
             </div>
             <p className="mt-2 text-[13.5px] leading-relaxed text-ink-2">
@@ -144,7 +146,7 @@ export function Architecture() {
                 <div className="flex items-baseline justify-between gap-3">
                   <h3
                     className={cn(
-                      'font-serif text-[18px] font-medium',
+                      'font-pixel text-[18px]',
                       agent.live ? 'text-ink' : 'text-ink-3',
                     )}
                   >
@@ -177,7 +179,7 @@ export function Architecture() {
 
         {/* The loop, in the order it runs */}
         <div className="mt-16 border-t border-rule pt-10">
-          <h3 className="font-serif text-[22px] font-medium tracking-tight text-ink">
+          <h3 className="font-pixel text-[22px] text-ink">
             What happens inside one turn
           </h3>
           <ol className="mt-6 grid gap-x-10 gap-y-6 sm:grid-cols-2 lg:grid-cols-3">
