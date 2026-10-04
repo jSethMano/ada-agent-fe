@@ -1,6 +1,8 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "ada",
+  // The public origin: chak.<subdomain>.workers.dev. Renaming this deploys a new
+  // Worker at a new URL rather than renaming the existing one.
+  "name": "chak",
   "main": "worker/index.ts",
   "compatibility_date": "2026-09-20",
   "observability": { "enabled": true },

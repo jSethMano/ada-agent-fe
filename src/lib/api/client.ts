@@ -19,14 +19,30 @@ export function instancePath(instance: string): string {
   return `/agents/${AGENT.slug}/${instance}`
 }
 
-function isTraceArray(value: unknown): value is TraceEntry[] {
-  return (
-    Array.isArray(value) &&
-    value.every(
-      (entry) =>
-        typeof entry === 'object' && entry !== null && typeof (entry as TraceEntry).tool === 'string',
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function isTraceEntry(entry: unknown): entry is TraceEntry {
+  if (!isRecord(entry)) return false
+  if (entry.kind === 'check') {
+    return (
+      typeof entry.check === 'string' &&
+      typeof entry.ms === 'number' &&
+      Array.isArray(entry.answers) &&
+      entry.answers.every(
+        (answer) => isRecord(answer) && typeof answer.id === 'string' && typeof answer.type === 'string',
+      )
     )
-  )
+  }
+  // No `kind` is how the Worker sent tool calls before checks existed.
+  return (entry.kind === undefined || entry.kind === 'tool') && typeof entry.tool === 'string'
+}
+
+/** Keeps the rows that match a known shape and drops the rest one at a time,
+ *  so a single unrecognized row cannot hide every other row in the turn. */
+function normalizeTrace(value: unknown): TraceEntry[] {
+  return Array.isArray(value) ? value.filter(isTraceEntry) : []
 }
 
 export async function ask(
@@ -66,7 +82,7 @@ export async function ask(
         ? `${AGENT.name} is offline: the Worker is not responding (${response.status}). Start it with \`npm run dev\` in the ada-agent repo.`
         : (failure.error ?? `Worker responded ${response.status}.`),
       response.status,
-      isTraceArray(failure.trace) ? failure.trace : [],
+      normalizeTrace(failure.trace),
     )
   }
 
@@ -78,6 +94,6 @@ export async function ask(
   return {
     answer: ok.answer,
     iterations: typeof ok.iterations === 'number' ? ok.iterations : 1,
-    trace: isTraceArray(ok.trace) ? ok.trace : [],
+    trace: normalizeTrace(ok.trace),
   }
 }

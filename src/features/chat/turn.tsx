@@ -19,7 +19,9 @@ function Gutter({ speaker }: { speaker: 'you' | 'chak' }) {
 
 function Row({ speaker, children }: { speaker: 'you' | 'chak'; children: React.ReactNode }) {
   return (
-    <div className="grid grid-cols-[2.75rem_1fr] gap-x-3 px-4 py-4 sm:grid-cols-[3.5rem_1fr] sm:gap-x-4 sm:px-6">
+    // Below sm the label sits above the message: a side gutter there costs a
+    // quarter of the width that traces need.
+    <div className="grid grid-cols-1 gap-y-1.5 px-4 py-4 sm:grid-cols-[3.5rem_1fr] sm:gap-x-4 sm:gap-y-0 sm:px-6">
       <Gutter speaker={speaker} />
       <div className="min-w-0">{children}</div>
     </div>
@@ -27,10 +29,14 @@ function Row({ speaker, children }: { speaker: 'you' | 'chak'; children: React.R
 }
 
 export function TurnView({ turn, onRetry }: { turn: Turn; onRetry: (id: string) => void }) {
-  const overran = turn.status === 'failed' && (turn.trace?.length ?? 0) > 0
+  const failedWithTrace = turn.status === 'failed' && (turn.trace?.length ?? 0) > 0
+  // A 502 carries a trace too (the guard row is recorded even when the model
+  // call throws), so only the 500 means the loop ran out of passes. Turns saved
+  // before errorStatus existed could only have had a trace on the 500 path.
+  const overran = failedWithTrace && turn.errorStatus !== 502
 
   return (
-    <article className="border-t border-rule first:border-t-0">
+    <article className="scroll-mb-28 border-t border-rule first:border-t-0">
       <Row speaker="you">
         <p className="text-[15px] leading-relaxed text-ink">{turn.question}</p>
       </Row>
@@ -60,11 +66,11 @@ export function TurnView({ turn, onRetry }: { turn: Turn; onRetry: (id: string) 
 
         {turn.status === 'failed' && (
           <>
-            {overran && (
+            {failedWithTrace && (
               <Trace
                 trace={turn.trace ?? []}
                 elapsedMs={turn.elapsedMs}
-                overran
+                failed
               />
             )}
             <div className="mt-3 border-l-2 border-danger bg-danger-wash px-3 py-2.5">

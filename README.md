@@ -150,13 +150,13 @@ feedback. No animation library. Everything collapses under `prefers-reduced-moti
 
 ## Deployed
 
-**<https://ada.joshuaseth11.workers.dev>**
+**<https://chak.joshuaseth11.workers.dev>**
 
-Two Workers, one public origin. The browser only ever talks to `ada`; the agent is reached over an
+Two Workers, one public origin. The browser only ever talks to `chak`; the agent is reached over an
 internal service binding, so CORS never enters the picture.
 
 ```
-browser ──> ada  (Worker + static assets)
+browser ──> chak (Worker + static assets)
               │
               ├── /agents/*        ──(service binding)──> ada-agent ──> Chak DO ──> Workers AI
               │                                                     └──> ItAgent DO
@@ -168,7 +168,7 @@ This is the production equivalent of the dev proxy, so dev and production behave
 
 | Worker | Config | Role |
 | --- | --- | --- |
-| `ada` | `wrangler.jsonc` here | Serves `dist/`, forwards `/agents/*` |
+| `chak` | `wrangler.jsonc` here | Serves `dist/`, forwards `/agents/*` |
 | `ada-agent` | sibling repo | Durable Objects, tool loop, Workers AI |
 
 ### Deploying changes

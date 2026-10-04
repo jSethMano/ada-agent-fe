@@ -25,11 +25,21 @@ export function useComposerDraft() {
   return [useSyncExternalStore(subscribe, () => draft), setDraft] as const
 }
 
-/** Fill the composer and bring the console into view. Never sends: the visitor
- *  still chooses, the same rule as failed turns not retrying on their own. */
+/** Fill the composer and bring it into view. Never sends: the visitor still
+ *  chooses, the same rule as failed turns not retrying on their own. */
 export function prefillComposer(text: string) {
   setDraft(text)
-  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  document.getElementById('console')?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' })
-  document.getElementById(COMPOSER_ID)?.focus({ preventScroll: true })
+  const field = document.getElementById(COMPOSER_ID)
+
+  // lg and up the whole console fits on screen, so show all of it.
+  if (window.matchMedia('(min-width: 1024px)').matches) {
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    document.getElementById('console')?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' })
+    field?.focus({ preventScroll: true })
+    return
+  }
+
+  // Below lg the console can be taller than the screen. Focusing the field
+  // scrolls the page to it, and on a phone opens the keyboard beside it.
+  field?.focus()
 }

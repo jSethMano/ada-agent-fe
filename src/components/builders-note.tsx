@@ -35,7 +35,7 @@ export function BuildersNote() {
         </div>
 
         <aside className="border-t border-rule pt-5 lg:border-t-0 lg:border-l lg:pt-1 lg:pl-8">
-          <p className="font-pixel text-[10.5px] tracking-wide text-ink-3">what is real</p>
+          <p className="font-pixel text-[11px] tracking-wide text-ink-3">what is real</p>
           <dl className="mt-3 space-y-3.5 text-[13.5px] leading-relaxed">
             <div>
               <dt className="font-mono text-[12px] text-ink">model, routing, memory</dt>

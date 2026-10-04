@@ -37,7 +37,7 @@ export function ConversationMenu({
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="outline" size="sm" className="font-mono text-[11.5px]">
+        <Button variant="outline" size="sm" className="font-mono text-[11.5px] pointer-coarse:h-11">
           <ClockCounterClockwiseIcon aria-hidden weight="bold" />
           History
           {history.length > 0 && (
@@ -50,7 +50,7 @@ export function ConversationMenu({
         align="end"
         className="w-[min(22rem,calc(100vw-2rem))] border-rule bg-surface p-0"
       >
-        <p className="border-b border-rule px-3 py-2 font-pixel text-[10.5px] tracking-wide text-ink-3">
+        <p className="border-b border-rule px-3 py-2 font-pixel text-[11px] tracking-wide text-ink-3">
           past conversations
         </p>
 
@@ -73,7 +73,7 @@ export function ConversationMenu({
                     onClick={() => onSelect(conversation.instance)}
                     aria-current={isActive ? 'true' : undefined}
                     className={cn(
-                      'w-full px-3 py-2.5 pr-10 text-left transition-colors hover:bg-accent-wash',
+                      'w-full px-3 py-2.5 pr-10 text-left transition-colors hover:bg-accent-wash pointer-coarse:pr-12',
                       isActive && 'bg-accent-wash',
                     )}
                   >
@@ -85,7 +85,7 @@ export function ConversationMenu({
                     >
                       {conversationTitle(conversation)}
                     </span>
-                    <span className="mt-1 flex items-baseline gap-2 font-mono text-[10.5px] text-ink-3">
+                    <span className="mt-1 flex items-baseline gap-2 font-mono text-[11px] text-ink-3">
                       <span className="truncate">{conversation.instance}</span>
                       <span className="whitespace-nowrap">
                         {conversation.turns.length}{' '}
@@ -97,12 +97,13 @@ export function ConversationMenu({
                     </span>
                   </button>
 
-                  {/* Always in the DOM so it is reachable by keyboard; only
-                      visually revealed on hover or focus. */}
+                  {/* Always in the DOM so it is reachable by keyboard; revealed
+                      on hover or focus. Touch has no hover, so there it is always
+                      shown, as a full-height column that is easy to hit. */}
                   <button
                     type="button"
                     onClick={() => onRemove(conversation.instance)}
-                    className="absolute top-2 right-2 p-1.5 text-ink-3 opacity-0 transition-opacity group-hover:opacity-100 hover:text-danger focus-visible:opacity-100"
+                    className="absolute top-2 right-2 p-1.5 text-ink-3 opacity-0 transition-opacity group-hover:opacity-100 hover:text-danger focus-visible:opacity-100 pointer-coarse:top-0 pointer-coarse:right-0 pointer-coarse:flex pointer-coarse:h-full pointer-coarse:items-center pointer-coarse:px-3.5 pointer-coarse:opacity-100"
                   >
                     <TrashIcon aria-hidden weight="bold" className="size-3.5" />
                     <span className="sr-only">

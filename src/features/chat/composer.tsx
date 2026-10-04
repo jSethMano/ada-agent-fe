@@ -31,7 +31,11 @@ export function Composer({ onSubmit, disabled }: ComposerProps) {
   }
 
   return (
-    <div className="border-t border-rule bg-surface px-4 py-3 sm:px-6">
+    // Below lg the page scrolls, not the thread, so the composer sticks to the
+    // bottom of the viewport while the console is on screen. On touch it lets go
+    // while focused: iOS Safari can leave a sticky field behind the keyboard,
+    // and a static one is scrolled into view by the browser itself.
+    <div className="sticky bottom-0 z-10 border-t border-rule bg-surface px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-6 lg:static pointer-coarse:focus-within:static">
       <form
         onSubmit={(event) => {
           event.preventDefault()
@@ -48,6 +52,7 @@ export function Composer({ onSubmit, disabled }: ComposerProps) {
           id={COMPOSER_ID}
           ref={ref}
           rows={1}
+          enterKeyHint="send"
           value={value}
           disabled={disabled}
           onChange={(event) => setValue(event.target.value)}
@@ -58,14 +63,20 @@ export function Composer({ onSubmit, disabled }: ComposerProps) {
             }
           }}
           placeholder="Ask about a ticket, a policy, or anything else"
-          className="max-h-40 min-h-9 resize-none border-rule bg-paper px-2.5 py-2 text-[15px] leading-relaxed placeholder:text-ink-3 md:text-[15px]"
+          // 16px below sm: iOS Safari zooms the page into any field set smaller.
+          className="max-h-40 min-h-9 resize-none border-rule bg-paper px-2.5 py-2 text-base leading-relaxed placeholder:text-ink-3 sm:text-[15px] md:text-[15px] pointer-coarse:min-h-11"
         />
-        <Button type="submit" disabled={disabled || value.trim().length === 0} className="h-9 px-3">
+        <Button
+          type="submit"
+          disabled={disabled || value.trim().length === 0}
+          className="h-9 px-3 pointer-coarse:h-11"
+        >
           Send
           <ArrowUpIcon aria-hidden weight="bold" />
         </Button>
       </form>
-      <p className="mt-2 font-mono text-[10.5px] text-ink-3">
+      {/* Phones have no Shift key; their return key reads "send" instead. */}
+      <p className="mt-2 font-mono text-[11px] text-ink-3 pointer-coarse:hidden">
         Enter to send · Shift + Enter for a new line
       </p>
     </div>

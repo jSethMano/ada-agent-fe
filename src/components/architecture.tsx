@@ -59,6 +59,10 @@ const LOOP_STEPS = [
     detail: 'The instance id in the URL selects the Durable Object, which already holds this visitor’s history.',
   },
   {
+    verb: 'Check',
+    detail: `Alongside the first model call, Jev (${SITE.jevModel}) scores the question for injection, scope, and pasted secrets. The scores go into the trace; nothing acts on them yet.`,
+  },
+  {
     verb: 'Decide',
     detail: 'The model sees the system prompt, the history, and the tool schemas, then either answers or emits tool calls.',
   },
@@ -113,11 +117,11 @@ export function Architecture() {
             </p>
             <dl className="mt-3 grid gap-x-6 gap-y-1.5 border-t border-rule pt-3 sm:grid-cols-2">
               <div className="flex flex-wrap items-baseline gap-x-2">
-                <dt className="font-mono text-[10.5px] text-ink-3">model</dt>
+                <dt className="font-mono text-[11px] text-ink-3">model</dt>
                 <dd className="font-mono text-[11.5px] break-all text-ink-2">{SITE.model}</dd>
               </div>
               <div className="flex items-baseline gap-2">
-                <dt className="font-mono text-[10.5px] text-ink-3">max iterations</dt>
+                <dt className="font-mono text-[11px] text-ink-3">max iterations</dt>
                 <dd className="font-mono text-[11.5px] tabular-nums text-ink-2">
                   {SITE.maxIterations}
                 </dd>
@@ -126,6 +130,8 @@ export function Architecture() {
           </div>
 
           <div aria-hidden className="mx-auto hidden h-8 w-px bg-rule-strong sm:block" />
+          {/* Phones stack the sub-agents on a left rail; this joins it to the router. */}
+          <div aria-hidden className="h-4 w-px bg-rule sm:hidden" />
           <div aria-hidden className="hidden grid-cols-3 sm:grid">
             <Connector side="left" />
             <Connector side="center" />
@@ -152,7 +158,7 @@ export function Architecture() {
                   >
                     {agent.name}
                   </h3>
-                  <span className="font-mono text-[10.5px] text-ink-3">
+                  <span className="font-mono text-[11px] text-ink-3">
                     {agent.live ? 'live' : 'planned'}
                   </span>
                 </div>

@@ -45,6 +45,7 @@ export function ChakConsole() {
   const { instance, turns } = active
   const { submit, retry, isPending } = useAsk(instance, turns, setActiveTurns)
   const threadRef = useRef<HTMLDivElement>(null)
+  const seenInstance = useRef<string | null>(null)
 
   // Keep the newest turn in view. The pending row and the answered row are the
   // same element, so this fires once per turn rather than jumping twice.
@@ -52,9 +53,27 @@ export function ChakConsole() {
   // transcript at its most recent message rather than the top.
   useEffect(() => {
     const thread = threadRef.current
+    const firstRun = seenInstance.current === null
+    const switched = !firstRun && seenInstance.current !== instance
+    seenInstance.current = instance
     if (!thread || turns.length === 0) return
-    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    thread.scrollTo({ top: thread.scrollHeight, behavior: reduce ? 'auto' : 'smooth' })
+    const behavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'
+
+    // lg and up: the console is a fixed-height panel and the thread scrolls.
+    if (thread.scrollHeight > thread.clientHeight) {
+      thread.scrollTo({ top: thread.scrollHeight, behavior })
+      return
+    }
+
+    // Below lg the page scrolls, so moving the thread means moving the page.
+    // Never on first load, and only when the visitor is watching the newest
+    // turn (or just switched conversation), so reading elsewhere on the page
+    // is never interrupted. Articles carry scroll-mb to clear the composer.
+    const newest = thread.lastElementChild
+    if (firstRun || !newest) return
+    const { top, bottom } = newest.getBoundingClientRect()
+    const watching = bottom > 0 && top < window.innerHeight
+    if (switched || watching) newest.scrollIntoView({ block: 'nearest', behavior })
   }, [turns, instance])
 
   return (
@@ -64,7 +83,7 @@ export function ChakConsole() {
     >
       <header className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-rule px-4 py-2.5 sm:px-6">
         <p className="flex min-w-0 items-baseline gap-2">
-          <span className="font-mono text-[10.5px] whitespace-nowrap text-ink-3">memory scope</span>
+          <span className="font-mono text-[11px] whitespace-nowrap text-ink-3">memory scope</span>
           <code className="truncate font-mono text-[12px] text-ink-2">{instancePath(instance)}</code>
         </p>
         <div className="flex items-center gap-2">
@@ -74,7 +93,12 @@ export function ChakConsole() {
             onSelect={switchTo}
             onRemove={remove}
           />
-          <Button variant="outline" size="sm" onClick={startNew} className="font-mono text-[11.5px]">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={startNew}
+            className="font-mono text-[11.5px] pointer-coarse:h-11"
+          >
             <PlusIcon aria-hidden weight="bold" />
             New
           </Button>

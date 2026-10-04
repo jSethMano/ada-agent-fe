@@ -58,8 +58,9 @@ export function useAsk(
       patchTurn(variables.turnId, {
         status: 'failed',
         error: chakError?.message ?? (error instanceof Error ? error.message : 'Unknown failure.'),
-        // The 500 "exceeded max iterations" path still returns a trace.
+        // The 500 (out of passes) and 502 (a call threw) paths still return a trace.
         trace: chakError?.trace ?? [],
+        errorStatus: chakError?.status,
         elapsedMs: (chakError as (ChakError & { elapsedMs?: number }) | null)?.elapsedMs,
       })
     },
@@ -81,7 +82,13 @@ export function useAsk(
     (turnId: string) => {
       const target = turns.find((turn) => turn.id === turnId)
       if (!target || mutation.isPending) return
-      patchTurn(turnId, { status: 'pending', error: undefined, trace: undefined, elapsedMs: undefined })
+      patchTurn(turnId, {
+        status: 'pending',
+        error: undefined,
+        errorStatus: undefined,
+        trace: undefined,
+        elapsedMs: undefined,
+      })
       mutation.mutate({ question: target.question, turnId })
     },
     [turns, mutation, patchTurn],

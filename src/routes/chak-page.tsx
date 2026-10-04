@@ -24,15 +24,15 @@ export function ChakPage() {
             a stranger should be able to ask Chak something without scrolling. */}
         <section
           aria-labelledby="hero-heading"
-          className="mx-auto grid max-w-[1240px] gap-x-12 gap-y-8 px-5 pt-10 pb-16 sm:px-8 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:items-center lg:pt-16 lg:pb-20"
+          className="mx-auto grid max-w-[1240px] gap-x-12 gap-y-6 px-5 pt-6 pb-16 sm:gap-y-8 sm:px-8 sm:pt-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:items-center lg:pt-16 lg:pb-20"
         >
           <div>
-            {/* 64px on small screens so the console stays close to the fold;
-                both sizes are whole multiples of the 16px grid. */}
-            <ChakSprite size={64} className="mb-6 lg:size-32" />
+            {/* 48 on phones, 64 on tablets, 128 on desktop: the console stays
+                near the fold, and every size is a whole multiple of the 16px grid. */}
+            <ChakSprite size={48} className="mb-4 sm:mb-6 sm:size-16 lg:size-32" />
             <h1
               id="hero-heading"
-              className="font-pixel text-[40px] leading-[1.08] text-ink sm:text-[52px] lg:text-[46px] xl:text-[54px]"
+              className="font-pixel text-[34px] leading-[1.08] text-ink sm:text-[52px] lg:text-[46px] xl:text-[54px]"
             >
               A helpdesk cat who shows his work.
             </h1>

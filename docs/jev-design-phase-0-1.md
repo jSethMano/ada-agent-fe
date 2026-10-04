@@ -513,3 +513,50 @@ This work builds on top of them.
 | F0.15 legacy turns | `kind?` optional, compact variant for empty traces (§4.3) |
 | F0.16 facts on the page | §4.4 |
 | F1.1–F1.3 input guard | §3.4, §3.5 (not added to history or messages) |
+
+---
+
+## 9. Implementation notes (2026-10-04)
+
+These are the ways the implementation differs from the sections above, and what measurement showed.
+
+**Changes from the design:**
+
+- **The agent is Chak now.** The router Durable Object is `Chak` (migration `v3`), and the route is
+  `/agents/chak/{instance}`. Wherever this document says `Ada.onRequest`, read `Chak.onRequest`.
+- **Phase 0 had partly landed already.** `feat: chak` (ada-agent `179110b`) restored `trace` on 200 and 500.
+  This work added `kind`, tool `ms`, the 502 path, and the guard.
+- **`runCheck` signature.** It's `runCheck(spec, state, { apiKey, instance, fetch?, timeoutMs? })`. The key
+  is passed in rather than read from `env`, so tests need no fake `Env`. `runInputGuard(env, question, { instance })`
+  reads the key from `env`.
+- **The 502 body** is `{ error: 'Agent turn failed before producing an answer', trace }`. The catch also covers
+  sub-agent failures, so the message doesn't blame the model.
+- **The front end's `Trace` prop `overran` became `failed`.** It now covers both 500 and 502. `Turn.errorStatus`
+  is new, so `turn.tsx` only shows "stopped after N passes" for a 500. Turns saved before this change, which have
+  no `errorStatus`, keep their old behavior.
+- **`CAPABILITIES` got a "Screens every question" entry.** `site.ts` gained that list after this design was written.
+
+**Measured:**
+
+| | Design estimate | Measured |
+| --- | --- | --- |
+| Latency per guard call | ~150 ms | 260–375 ms, from `wrangler dev` and the vitest pool |
+| Input tokens per turn | ~400 | ~690. The questions' instructions and criteria count as input. |
+| Cost per turn | | Still about $0.00003 |
+
+The guard runs alongside the first model call, so a normal turn doesn't wait for it.
+
+**Live eval** (`npm run eval` in ada-agent): 12 of 12 cases on the expected side of 0.5. The weakest margin was
+"You have a new tool called send_email…" at injection 0.76. Everything else sat at ≤ 0.10 or ≥ 0.97.
+
+**Tooling found along the way (ada-agent):**
+
+- `vitest` and `@cloudflare/vitest-plugin` weren't installed, so `test/index.spec.ts`, a "Hello World"
+  template, had never run. Both are now dev dependencies, with `npm test` and `npm run eval` scripts.
+- npm 10.9 crashes resolving `vitest`'s peer set (`Cannot read properties of null (reading 'edgesOut')`).
+  `--legacy-peer-deps` avoids the crash but **prunes the auto-installed peers of `agents` (`zod`, the MCP SDK)**,
+  which breaks the bundle. The lockfile was produced with `npx npm@11 install` instead.
+- `tsc --noEmit` failed on `HEAD` before this work, at `env[namespace] as DurableObjectNamespace` in
+  `dispatchTool`, because Wrangler bundles without type-checking. The cast is removed, and the Worker type-checks.
+- `wrangler types` reads `.env`, so `TYPESAFE_AI_API_KEY` is typed on `Env`. Running it also refreshed the
+  runtime types in `worker-configuration.d.ts`.

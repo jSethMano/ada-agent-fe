@@ -34,13 +34,16 @@ The `{instance}` path segment IS the Durable Object memory boundary in the Worke
 
 The `chak` slug is `AGENT.slug` in `src/lib/site.ts` and is not free to change: the agents SDK routes on the Durable Object binding name in `ada-agent/wrangler.jsonc`. The agent was renamed from Ada (Worker migration `v3`, `renamed_classes`, so existing conversations survived). The Worker still rewrites `/agents/ada/*` for one release, and `use-conversations.ts` still reads the old `ada.conversations.v1` / `ada.instance` keys once; both shims can go once no client needs them.
 
-Three response shapes, all handled by `ask()` in `src/lib/api/client.ts`:
+Four response shapes, all handled by `ask()` in `src/lib/api/client.ts`:
 
 | Status | Body | Behavior |
 | --- | --- | --- |
 | 200 | `{ answer, iterations, trace[] }` | Turn resolved |
 | 400 | `{ error }` | Inline error with retry |
 | 500 | `{ error, trace[] }` | Loop exceeded `MAX_ITERATIONS`; **partial trace is still rendered** |
+| 502 | `{ error, trace[] }` | A model or sub-agent call threw mid-turn; partial trace rendered, without the "out of passes" copy (`Turn.errorStatus` tells the two apart) |
+
+`trace[]` is a union (`TraceEntry` in `types.ts`, mirrored from `ada-agent/src/trace.ts`): `kind: 'tool'` rows are calls the router made; `kind: 'check'` rows are Jev (TypeSafe System One) checks the Worker runs alongside the loop, rendered as `jev.<check>`. Today that is one check, `input_guard` (injection / in-scope / pasted-credential probabilities). Checks are **annotate-only**: nothing in the loop reads them, and `flagged` is a display rule set by the Worker, not a threshold. A tool row with no `kind` is a turn saved in localStorage before checks existed. `normalizeTrace()` drops unrecognized rows one at a time rather than rejecting the trace. **Deploy this front end before a Worker that adds a new row shape** — older front ends dropped the whole trace on any row without a `tool` field.
 
 Gateway failures (502/503/504 with no JSON body — typical for a dead Worker upstream) are re-messaged as "Chak is offline: the Worker is not responding" rather than surfaced as raw status codes. All non-2xx and transport failures throw `ChakError`, which carries the partial trace so the UI can still show the work.
 
@@ -78,6 +81,14 @@ This is a "Page Theme Lock" build — one light theme, deliberately. Editing mus
 
 Colors and tokens are in `src/index.css` under `:root`. shadcn semantic tokens (`--background`, `--primary`, etc.) are mapped onto the design tokens so primitives inherit the design.
 
+### Mobile (design: `docs/design/mobile.md`)
+
+- **Below `lg` the page scrolls, never a panel.** The console is a fixed-height panel with its own scrolling thread only at `lg`+. Below that, the composer is `sticky bottom-0` (with a safe-area bottom pad) and `ChakConsole` scrolls the *page* to the newest turn, never on first load and only when the visitor is already watching it. Don't add nested scroll containers on phones.
+- **Touch-only fixes use `pointer-coarse:`**, so desktop stays unchanged: 44px hit areas (padding plus negative margin where the visual size must not change), the always-visible History delete, the hidden "Shift + Enter" hint, and the composer letting go of `sticky` while focused (iOS keyboard fallback).
+- **Inputs are 16px below `sm`**, or iOS Safari zooms the page on focus. The textarea has `enterKeyHint="send"`.
+- **Machine-register text floor is 11px.** Don't reintroduce 10.5px.
+- Phone navigation shows Capabilities + Source; Architecture and Status join at `sm`.
+
 ### Chak, the character (design: `docs/design/chak-brand.md`)
 
 Chak is an orange-and-white office cat. Pronoun: **he**. The character is a tone, and it must stay professional:
@@ -88,10 +99,11 @@ Chak is an orange-and-white office cat. Pronoun: **he**. The character is a tone
 
 ### Facts on the page
 
-`src/lib/site.ts` (`AGENT`, `SITE`, `CAPABILITIES`, `GUARDRAILS`, `CANNOT`, `STACK`) is the single source of truth for anything printed about the Worker (name and route slug, model, `MAX_ITERATIONS`, agents SDK version, what Chak can and cannot do). `CAPABILITIES` lists live behavior only; planned work belongs in the status ledger. These are read off `ada-agent/src/index.ts` and its `wrangler.jsonc` so the page cannot silently drift from the Worker. Update `site.ts` when the Worker changes, not the copy in components.
+`src/lib/site.ts` (`AGENT`, `SITE`, `CAPABILITIES`, `GUARDRAILS`, `CANNOT`, `STACK`) is the single source of truth for anything printed about the Worker (name and route slug, model, `MAX_ITERATIONS`, agents SDK version, the pinned Jev model, what Chak can and cannot do). `CAPABILITIES` lists live behavior only; planned work belongs in the status ledger. These are read off `ada-agent/src/index.ts` and its `wrangler.jsonc` so the page cannot silently drift from the Worker. Update `site.ts` when the Worker changes, not the copy in components.
 
 ## Known constraints
 
-- The Worker returns a flat `trace` with no per-entry iteration index. Tool calls are numbered in call order and `iterations` is reported separately — the UI does not fake iteration grouping.
+- The Worker returns a flat `trace` with no per-entry iteration index. Rows (tool calls and checks) share one ordinal sequence in start order, the header counts them separately, and `iterations` is reported on its own — the UI does not fake iteration grouping, and a check never counts as an iteration.
+- Jev checks are annotate-only until thresholds are chosen from real traffic (`docs/jev-requirements.md` §6). Requirements and design for the remaining phases (answer verification, ticket triage, router) are in `docs/jev-*.md`.
 - No streaming. The Worker returns the whole turn at once. The transcript is built so this can change without restructuring.
 - `SITE.githubUrl` in `src/lib/site.ts` is a placeholder — set it before sharing.
