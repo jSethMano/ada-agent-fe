@@ -560,3 +560,53 @@ The guard runs alongside the first model call, so a normal turn doesn't wait for
   `dispatchTool`, because Wrangler bundles without type-checking. The cast is removed, and the Worker type-checks.
 - `wrangler types` reads `.env`, so `TYPESAFE_AI_API_KEY` is typed on `Env`. Running it also refreshed the
   runtime types in `worker-configuration.d.ts`.
+
+---
+
+## 10. Enforcement: the guard blocks clear injections (2026-10-04)
+
+Phase 1 shipped annotate-only. This section supersedes the "annotate only" parts of §1 and §3.5 for the
+`injection` question. `in_scope` and `credential` are still recorded only.
+
+**Decisions** (chosen by the user):
+
+- **The guard runs before the model.** It's awaited before the first `AI.run`, not alongside it, so a blocked
+  turn costs zero Llama tokens. The trade-off: every turn now waits for the guard (measured 260–375 ms), and a
+  TypeSafe timeout can add up to `JEV_TIMEOUT_MS` (2000 ms) before the turn proceeds unchecked.
+- **The rule: `injection > 0.9` blocks.** Implemented as `BLOCK_INJECTION_ABOVE` and `applyBlockRule` in
+  `src/jev/input-guard.ts`, and mirrored as `SITE.guardBlockAbove`. It's a strict `>`, so exactly 0.9 passes.
+  - The line comes from the live eval: direct attacks 0.99, harmless questions ≤ 0.10. It's not from production
+    traffic yet.
+  - The fake-tool attack (0.76–0.78) deliberately stays under the line, and the model's system prompt refuses it.
+  - The display rule (`flagged`, > 0.5) is unchanged and separate.
+- **It fails open.** Only an `ok` entry has answers, so a skipped or failed check can't block.
+
+**A blocked turn:**
+
+- 200, with body `{ answer: BLOCKED_ANSWER, iterations: 0, trace: [guard] }`. The guard row carries
+  `action: 'blocked'`.
+- The answer is fixed text from the Worker; the model never saw the question.
+- Not written to Durable Object history. The early return comes before the message list is built, so the attempt
+  never becomes context for the next turn.
+- Logs `{"event":"guard.blocked","instance":...}`, in addition to the usual `jev.check` line.
+
+**Front end:**
+
+- `CheckEntry.action` (a string, for forward compatibility).
+- The check row prints the action beside its name in danger ink.
+- The trace header reads "blocked before the model ran" in place of "answered directly".
+- `site.ts`:
+  - `guardBlockAbove`, plus a `GUARDRAILS` line.
+  - The "Screens every question" capability now describes blocking.
+  - The "Ignores instructions hidden in text" example changed to the fake-tool attack. The old example
+    ("Ignore your rules…") is now blocked by the guard, so it would no longer show the model's own defense.
+
+**Verified:**
+
+- Unit tests for `applyBlockRule`: above the line, at the line, the borderline band, fail-open, and credentials
+  never blocking. 21 of 21 Worker tests pass.
+- Live eval, 12 of 12. The two direct attacks are blocked; no harmless case is.
+- `wrangler dev`:
+  - The attack was blocked in 0.56 s total, with 0 iterations.
+  - "Look up ticket 42" ran normally.
+  - The fake-tool attack reached Llama, which refused it.

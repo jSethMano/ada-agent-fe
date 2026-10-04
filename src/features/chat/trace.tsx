@@ -185,15 +185,17 @@ function AnswerLine({ answer }: { answer: CheckAnswer }) {
 
 /**
  * A Jev check. The name is prefixed `jev.` so it can never be mistaken for a
- * tool the router chose to call: checks run alongside the loop, and nothing in
- * the loop reads them. A skipped or failed check still gets its row, in muted
- * ink rather than danger, because a missing annotation is not an alarm.
+ * tool the router chose to call. When the Worker acted on the result, the
+ * action is printed beside the name in danger ink. A skipped or failed check
+ * still gets its row, in muted ink rather than danger, because a missing check
+ * is not an alarm, and it never blocks.
  */
 function CheckRow({ entry, ordinal }: { entry: CheckEntry; ordinal: number }) {
   const meta = {
     model: entry.model,
     status: entry.status,
     reason: entry.reason,
+    action: entry.action,
     inputTokens: entry.inputTokens,
   }
 
@@ -203,7 +205,12 @@ function CheckRow({ entry, ordinal }: { entry: CheckEntry; ordinal: number }) {
       ms={entry.ms}
       summary={
         <>
-          <code className="font-mono text-[13px] font-medium text-ink">jev.{entry.check}</code>
+          <span className="flex flex-wrap items-baseline gap-x-2">
+            <code className="font-mono text-[13px] font-medium text-ink">jev.{entry.check}</code>
+            {entry.action && (
+              <code className="font-mono text-[11.5px] font-medium text-danger">{entry.action}</code>
+            )}
+          </span>
           {entry.status === 'ok' ? (
             <span className="mt-1 grid grid-cols-[auto_auto_auto_1fr] items-baseline gap-x-3 gap-y-0.5">
               {entry.answers.map((answer) => (
@@ -261,11 +268,15 @@ interface TraceProps {
  * Tool calls and checks share one ordinal sequence, because that is the order
  * they started in, but are counted separately: a check is not something the
  * router decided to do, and it never counts as an iteration.
+ *
+ * A blocked turn has one row, the guard, and 0 iterations: the answer under it
+ * is the Worker's fixed refusal, because the model never saw the question.
  */
 export function Trace({ trace, iterations, elapsedMs, failed }: TraceProps) {
   const multiPass = (iterations ?? 1) > 1
   const toolCount = trace.filter((entry) => !isCheck(entry)).length
   const checkCount = trace.length - toolCount
+  const blocked = trace.some((entry) => isCheck(entry) && entry.action === 'blocked')
 
   if (trace.length === 0 && !failed) {
     return (
@@ -295,7 +306,9 @@ export function Trace({ trace, iterations, elapsedMs, failed }: TraceProps) {
         )}
         {/* With a check row present the trace is never empty, so the
             direct-answer case is named here instead of as "0 tool calls". */}
-        {toolCount === 0 && !failed ? (
+        {blocked ? (
+          <span className="whitespace-nowrap text-danger">blocked before the model ran</span>
+        ) : toolCount === 0 && !failed ? (
           <span className="whitespace-nowrap text-ink-3">answered directly</span>
         ) : (
           <Stat value={String(toolCount)} label={toolCount === 1 ? 'tool call' : 'tool calls'} />

@@ -38,12 +38,12 @@ Four response shapes, all handled by `ask()` in `src/lib/api/client.ts`:
 
 | Status | Body | Behavior |
 | --- | --- | --- |
-| 200 | `{ answer, iterations, trace[] }` | Turn resolved |
+| 200 | `{ answer, iterations, trace[] }` | Turn resolved. A turn the input guard blocked is also a 200: `iterations: 0`, the guard row with `action: 'blocked'`, and a fixed refusal as `answer` |
 | 400 | `{ error }` | Inline error with retry |
 | 500 | `{ error, trace[] }` | Loop exceeded `MAX_ITERATIONS`; **partial trace is still rendered** |
 | 502 | `{ error, trace[] }` | A model or sub-agent call threw mid-turn; partial trace rendered, without the "out of passes" copy (`Turn.errorStatus` tells the two apart) |
 
-`trace[]` is a union (`TraceEntry` in `types.ts`, mirrored from `ada-agent/src/trace.ts`): `kind: 'tool'` rows are calls the router made; `kind: 'check'` rows are Jev (TypeSafe System One) checks the Worker runs alongside the loop, rendered as `jev.<check>`. Today that is one check, `input_guard` (injection / in-scope / pasted-credential probabilities). Checks are **annotate-only**: nothing in the loop reads them, and `flagged` is a display rule set by the Worker, not a threshold. A tool row with no `kind` is a turn saved in localStorage before checks existed. `normalizeTrace()` drops unrecognized rows one at a time rather than rejecting the trace. **Deploy this front end before a Worker that adds a new row shape** — older front ends dropped the whole trace on any row without a `tool` field.
+`trace[]` is a union (`TraceEntry` in `types.ts`, mirrored from `ada-agent/src/trace.ts`): `kind: 'tool'` rows are calls the router made; `kind: 'check'` rows are Jev (TypeSafe System One) checks, rendered as `jev.<check>`. Today that is one check, `input_guard` (injection / in-scope / pasted-credential probabilities), which runs **before** the model. It enforces exactly one rule: injection above `SITE.guardBlockAbove` (0.9, mirrored from `BLOCK_INJECTION_ABOVE` in the Worker) refuses the turn without calling the model, and the row carries `action: 'blocked'`. Every other score is recorded only. `flagged` is a separate, display-only rule (> 0.5) set by the Worker. A skipped or failed check never blocks — a TypeSafe outage lets questions through. A tool row with no `kind` is a turn saved in localStorage before checks existed. `normalizeTrace()` drops unrecognized rows one at a time rather than rejecting the trace. **Deploy this front end before a Worker that adds a new row shape** — older front ends dropped the whole trace on any row without a `tool` field.
 
 Gateway failures (502/503/504 with no JSON body — typical for a dead Worker upstream) are re-messaged as "Chak is offline: the Worker is not responding" rather than surfaced as raw status codes. All non-2xx and transport failures throw `ChakError`, which carries the partial trace so the UI can still show the work.
 
@@ -104,6 +104,6 @@ Chak is an orange-and-white office cat. Pronoun: **he**. The character is a tone
 ## Known constraints
 
 - The Worker returns a flat `trace` with no per-entry iteration index. Rows (tool calls and checks) share one ordinal sequence in start order, the header counts them separately, and `iterations` is reported on its own — the UI does not fake iteration grouping, and a check never counts as an iteration.
-- Jev checks are annotate-only until thresholds are chosen from real traffic (`docs/jev-requirements.md` §6). Requirements and design for the remaining phases (answer verification, ticket triage, router) are in `docs/jev-*.md`.
+- The block line (0.9) was chosen from the 12-case live eval (`npm run eval` in ada-agent), not from production traffic: attacks scored 0.99, harmless questions ≤ 0.10, and the one borderline attack 0.78 deliberately still reaches the model. Revisit it against real `jev.check` / `guard.blocked` logs (`docs/jev-requirements.md` §6). The guard adds its latency (~260–375 ms) to every turn, because the model now waits for it. Requirements and design for the remaining phases (answer verification, ticket triage, router) are in `docs/jev-*.md`.
 - No streaming. The Worker returns the whole turn at once. The transcript is built so this can change without restructuring.
 - `SITE.githubUrl` in `src/lib/site.ts` is a placeholder — set it before sharing.

@@ -60,7 +60,7 @@ const LOOP_STEPS = [
   },
   {
     verb: 'Check',
-    detail: `Alongside the first model call, Jev (${SITE.jevModel}) scores the question for injection, scope, and pasted secrets. The scores go into the trace; nothing acts on them yet.`,
+    detail: `Before the model runs, Jev (${SITE.jevModel}) scores the question for injection, scope, and pasted secrets. An injection score above ${SITE.guardBlockAbove} ends the turn here with a fixed refusal; everything else goes on with its scores in the trace.`,
   },
   {
     verb: 'Decide',

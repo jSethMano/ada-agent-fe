@@ -7,7 +7,8 @@
  * (The Worker still rewrites the pre-rename /agents/ada/ prefix for one release.)
  *
  * The router loop returns one of four shapes:
- *   200  { answer, iterations, trace }        normal turn
+ *   200  { answer, iterations, trace }        normal turn, or one the input guard
+ *                                             blocked (iterations 0, fixed answer)
  *   400  { error }                            missing question
  *   500  { error, trace }                     loop exceeded MAX_ITERATIONS (5)
  *   502  { error, trace }                     a model or sub-agent call threw mid-turn
@@ -17,7 +18,7 @@
  */
 
 /** One row of the trace, in the order it started: a tool call the router made,
- *  or a Jev check the Worker ran alongside the loop. */
+ *  or a Jev check the Worker ran before the loop. */
 export type TraceEntry = ToolCallEntry | CheckEntry
 
 /** One tool invocation as recorded by the router. `result` is the raw sub-agent
@@ -33,8 +34,9 @@ export interface ToolCallEntry {
   ms?: number
 }
 
-/** A Jev (TypeSafe System One) check. Annotate-only: it records typed answers
- *  and probabilities, and never changes what the router does. */
+/** A Jev (TypeSafe System One) check. It records typed answers and
+ *  probabilities; it only changes what the router does where the Worker has a
+ *  rule for that, and then says so in `action`. */
 export interface CheckEntry {
   kind: 'check'
   /** Rendered as `jev.<check>`. A string rather than a union so a check the
@@ -43,6 +45,9 @@ export interface CheckEntry {
   status: 'ok' | 'skipped' | 'error'
   /** Why there are no answers, e.g. `no_api_key` or `timeout`. */
   reason?: string
+  /** Set when the Worker acted on the answers. Today only `blocked`: the input
+   *  guard refused the turn and the model never ran. */
+  action?: string
   /** The versioned model that answered, e.g. `jev-1.13.0`. */
   model?: string
   ms: number
