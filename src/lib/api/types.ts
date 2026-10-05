@@ -8,7 +8,9 @@
  *
  * The router loop returns one of four shapes:
  *   200  { answer, iterations, trace }        normal turn, or one the input guard
- *                                             blocked (iterations 0, fixed answer)
+ *                                             blocked (iterations 0, fixed answer),
+ *                                             or one whose answer was replaced
+ *                                             (fixed answer, full trace)
  *   400  { error }                            missing question
  *   500  { error, trace }                     loop exceeded MAX_ITERATIONS (5)
  *   502  { error, trace }                     a model or sub-agent call threw mid-turn
@@ -18,7 +20,8 @@
  */
 
 /** One row of the trace, in the order it started: a tool call the router made,
- *  or a Jev check the Worker ran before the loop. */
+ *  or a Jev check. `input_guard` runs before the loop; `verify_answer` runs after
+ *  it on answered turns, so it is always the last row. */
 export type TraceEntry = ToolCallEntry | CheckEntry
 
 /** One tool invocation as recorded by the router. `result` is the raw sub-agent
@@ -45,8 +48,9 @@ export interface CheckEntry {
   status: 'ok' | 'skipped' | 'error'
   /** Why there are no answers, e.g. `no_api_key` or `timeout`. */
   reason?: string
-  /** Set when the Worker acted on the answers. Today only `blocked`: the input
-   *  guard refused the turn and the model never ran. */
+  /** Set when the Worker acted on the answers. `blocked`: the input guard
+   *  refused the turn and the model never ran. `replaced`: the answer check found
+   *  the model's answer leaking its instructions, and the visitor got fixed text. */
   action?: string
   /** The versioned model that answered, e.g. `jev-1.13.0`. */
   model?: string

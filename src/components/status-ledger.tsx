@@ -13,6 +13,8 @@ const GROUPS: Group[] = [
       'Tickets you file persist in the sub-agent and survive across conversations',
       'Past conversations kept in the browser, traces and all, and resumable',
       'Full tool trace returned to the client and rendered on this page',
+      'Every question screened by Jev before the model runs; clear attacks refused without a model call',
+      'Every answer checked by Jev against the tool results; one that leaks his instructions is replaced',
       'Rate limited to 10 requests per minute per IP',
     ],
   },
@@ -31,7 +33,7 @@ const GROUPS: Group[] = [
       'Tickets 42 and 77 are seeded fixtures, not records from a real system.',
       'No auth. The instance id is a memory scope, not a credential.',
       'The Worker sends no CORS headers. Dev proxies through Vite, production through a service binding.',
-      'No evals yet. Tool selection is still verified by hand.',
+      'Only the Jev checks have evals. Tool selection is still verified by hand.',
     ],
   },
 ]

@@ -68,15 +68,15 @@ const LOOP_STEPS = [
   },
   {
     verb: 'Dispatch',
-    detail: 'Each tool call is routed to its sub-agent stub and awaited. Results are recorded into the trace.',
+    detail: 'Each tool call is routed to its sub-agent stub and awaited. Its result is recorded into the trace and goes back into the message list as a tool-role turn, keyed by tool_call_id.',
   },
   {
-    verb: 'Fold in',
-    detail: 'Tool results go back into the message list as tool-role turns, keyed by tool_call_id.',
+    verb: 'Verify',
+    detail: `When the model answers without calling a tool, Jev reads the answer against this conversation’s tool results for unconfirmed actions, ticket details no result backs, and leaked instructions. An answer that leaks his instructions (above ${SITE.answerReplace.promptLeakAbove}) is swapped for a fixed reply, in the response and in history; the rest is recorded only.`,
   },
   {
     verb: 'Answer',
-    detail: `Loop until the model stops calling tools, or stop at ${SITE.maxIterations} passes and return the partial trace.`,
+    detail: `Return the answer and the full trace. A turn that reaches ${SITE.maxIterations} passes stops instead and returns its partial trace, with no answer to verify.`,
   },
 ]
 

@@ -1,4 +1,4 @@
-import { useId, useState, type ReactNode } from 'react'
+import { Fragment, useId, useState, type ReactNode } from 'react'
 import { CaretRightIcon } from '@phosphor-icons/react'
 import { cn } from '@/lib/utils'
 import {
@@ -53,16 +53,19 @@ function Stat({ value, label, emphasis }: { value: string; label: string; emphas
 }
 
 /** The disclosure both row kinds share: a summary that toggles, and the full
- *  payload collapsed beneath it. */
+ *  payload collapsed beneath it. `detail` sits under the summary and also runs
+ *  under the timing column, for content that needs the row's full width. */
 function DisclosureRow({
   ordinal,
   ms,
   summary,
+  detail,
   panes,
 }: {
   ordinal: number
   ms?: number
   summary: ReactNode
+  detail?: ReactNode
   panes: ReactNode
 }) {
   const [open, setOpen] = useState(false)
@@ -98,6 +101,8 @@ function DisclosureRow({
             )}
           />
         </span>
+        {detail && <span className="col-span-2 col-start-2 min-w-0">{detail}</span>}
+
         <span className="sr-only">{open ? 'Hide' : 'Show'} full payload</span>
       </button>
 
@@ -167,13 +172,29 @@ function answerNote(answer: CheckAnswer): string {
   return notes.join(' · ')
 }
 
+/** A break opportunity after each underscore. On a phone the id column can then
+ *  narrow to `contradicts_` instead of pushing the value and its "flagged" note
+ *  out of the row; where there is room, nothing wraps. */
+function breakableId(id: string): ReactNode {
+  return id.split('_').map((part, index, parts) => (
+    <Fragment key={index}>
+      {part}
+      {index < parts.length - 1 && (
+        <>
+          _<wbr />
+        </>
+      )}
+    </Fragment>
+  ))
+}
+
 function AnswerLine({ answer }: { answer: CheckAnswer }) {
   const tone = answer.flagged ? 'text-danger' : 'text-ink-3'
   return (
     // `contents` lets the four cells join the parent grid, so ids, types, and
     // values line up in columns across every answer in the check.
     <span className="contents">
-      <code className="font-mono text-[11.5px] text-ink-3">{answer.id}</code>
+      <code className="font-mono text-[11.5px] text-ink-3">{breakableId(answer.id)}</code>
       <code className="font-mono text-[11.5px] text-ink-3">{answer.type}</code>
       <code className={cn('font-mono text-[11.5px] tabular-nums', answer.flagged ? 'text-danger' : 'text-ink-2')}>
         {formatValue(answer.value)}
@@ -204,25 +225,27 @@ function CheckRow({ entry, ordinal }: { entry: CheckEntry; ordinal: number }) {
       ordinal={ordinal}
       ms={entry.ms}
       summary={
-        <>
-          <span className="flex flex-wrap items-baseline gap-x-2">
-            <code className="font-mono text-[13px] font-medium text-ink">jev.{entry.check}</code>
-            {entry.action && (
-              <code className="font-mono text-[11.5px] font-medium text-danger">{entry.action}</code>
-            )}
-          </span>
-          {entry.status === 'ok' ? (
-            <span className="mt-1 grid grid-cols-[auto_auto_auto_1fr] items-baseline gap-x-3 gap-y-0.5">
-              {entry.answers.map((answer) => (
-                <AnswerLine key={answer.id} answer={answer} />
-              ))}
-            </span>
-          ) : (
-            <code className="mt-1 block font-mono text-[11.5px] text-ink-3">
-              {entry.status} · {entry.reason ?? 'unknown'}
-            </code>
+        <span className="flex flex-wrap items-baseline gap-x-2">
+          <code className="font-mono text-[13px] font-medium text-ink">jev.{entry.check}</code>
+          {entry.action && (
+            <code className="font-mono text-[11.5px] font-medium text-danger">{entry.action}</code>
           )}
-        </>
+        </span>
+      }
+      // Full width, so a long id, its value, and "flagged" still fit on a 320px
+      // phone without pushing the flag out of the row.
+      detail={
+        entry.status === 'ok' ? (
+          <span className="mt-1 grid grid-cols-[auto_auto_auto_1fr] items-baseline gap-x-2 gap-y-0.5 sm:gap-x-3">
+            {entry.answers.map((answer) => (
+              <AnswerLine key={answer.id} answer={answer} />
+            ))}
+          </span>
+        ) : (
+          <code className="mt-1 block font-mono text-[11.5px] text-ink-3">
+            {entry.status} · {entry.reason ?? 'unknown'}
+          </code>
+        )
       }
       panes={
         <>
@@ -269,14 +292,18 @@ interface TraceProps {
  * they started in, but are counted separately: a check is not something the
  * router decided to do, and it never counts as an iteration.
  *
- * A blocked turn has one row, the guard, and 0 iterations: the answer under it
- * is the Worker's fixed refusal, because the model never saw the question.
+ * An answered turn ends with the answer check, which ran after the loop on the
+ * model's answer. When that check replaced the answer, the text below the trace
+ * is the Worker's fixed reply, not what the model wrote. A blocked turn has one
+ * row, the guard, and 0 iterations: the answer under it is the Worker's fixed
+ * refusal, because the model never saw the question, so there is nothing to check.
  */
 export function Trace({ trace, iterations, elapsedMs, failed }: TraceProps) {
   const multiPass = (iterations ?? 1) > 1
   const toolCount = trace.filter((entry) => !isCheck(entry)).length
   const checkCount = trace.length - toolCount
   const blocked = trace.some((entry) => isCheck(entry) && entry.action === 'blocked')
+  const replaced = trace.some((entry) => isCheck(entry) && entry.action === 'replaced')
 
   if (trace.length === 0 && !failed) {
     return (
@@ -316,6 +343,7 @@ export function Trace({ trace, iterations, elapsedMs, failed }: TraceProps) {
         {checkCount > 0 && (
           <Stat value={String(checkCount)} label={checkCount === 1 ? 'check' : 'checks'} />
         )}
+        {replaced && <span className="whitespace-nowrap text-danger">answer replaced</span>}
         {elapsedMs !== undefined && <Stat value={formatDuration(elapsedMs)} label="roundtrip" />}
       </header>
 
