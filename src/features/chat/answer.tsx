@@ -64,7 +64,8 @@ export function Answer({ text }: { text: string }) {
   const paragraphs = text.trim().split(/\n{2,}/)
 
   return (
-    <div className="mt-3 space-y-3 font-pixel text-[17px] leading-[1.6] text-ink">
+    // Capped so prose stays readable when the console is enlarged to full width.
+    <div className="mt-3 max-w-[68ch] space-y-3 font-pixel text-[17px] leading-[1.6] text-ink">
       {paragraphs.map((paragraph, pIndex) => (
         <p key={pIndex}>
           {paragraph.split('\n').map((line, lIndex) => (

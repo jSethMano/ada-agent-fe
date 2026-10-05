@@ -68,7 +68,7 @@ const LOOP_STEPS = [
   },
   {
     verb: 'Dispatch',
-    detail: 'Each tool call is routed to its sub-agent stub and awaited. Its result is recorded into the trace and goes back into the message list as a tool-role turn, keyed by tool_call_id.',
+    detail: 'Each tool call is routed to its sub-agent stub and awaited. Before create_ticket goes out, Jev triages the new ticket and code sets its priority, so both are filed with it. Each result is recorded into the trace and goes back into the message list as a tool-role turn, keyed by tool_call_id.',
   },
   {
     verb: 'Verify',

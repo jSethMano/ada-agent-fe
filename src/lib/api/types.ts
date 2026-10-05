@@ -20,8 +20,9 @@
  */
 
 /** One row of the trace, in the order it started: a tool call the router made,
- *  or a Jev check. `input_guard` runs before the loop; `verify_answer` runs after
- *  it on answered turns, so it is always the last row. */
+ *  or a Jev check. `input_guard` runs before the loop. `triage_ticket` runs just
+ *  before each create_ticket, so it sits directly above that row. `verify_answer`
+ *  runs after the loop on answered turns, so it is always the last row. */
 export type TraceEntry = ToolCallEntry | CheckEntry
 
 /** One tool invocation as recorded by the router. `result` is the raw sub-agent
@@ -50,7 +51,9 @@ export interface CheckEntry {
   reason?: string
   /** Set when the Worker acted on the answers. `blocked`: the input guard
    *  refused the turn and the model never ran. `replaced`: the answer check found
-   *  the model's answer leaking its instructions, and the visitor got fixed text. */
+   *  the model's answer leaking its instructions, and the visitor got fixed text.
+   *  `held`: triage found no problem the visitor had described, so the ticket was
+   *  not filed and the model was told to ask what is wrong. */
   action?: string
   /** The versioned model that answered, e.g. `jev-1.13.0`. */
   model?: string

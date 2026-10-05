@@ -38,7 +38,7 @@ export function TurnView({ turn, onRetry }: { turn: Turn; onRetry: (id: string) 
   return (
     <article className="scroll-mb-28 border-t border-rule first:border-t-0">
       <Row speaker="you">
-        <p className="text-[15px] leading-relaxed text-ink">{turn.question}</p>
+        <p className="max-w-[68ch] text-[15px] leading-relaxed text-ink">{turn.question}</p>
       </Row>
 
       <Row speaker="chak">

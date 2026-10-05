@@ -33,6 +33,16 @@ export const SITE = {
    *  score is over `promptLeakAbove` is replaced with fixed text before it is
    *  sent. The answer check's other scores are recorded only. */
   answerReplace: { promptLeakAbove: 0.6 },
+
+  /** MAX_TRIAGE_CANDIDATES in ada-agent/src/index.ts: how many recent tickets,
+   *  on top of the fixtures, triage compares a new ticket against. */
+  triageCandidates: 20,
+
+  /** HOLD in ada-agent/src/jev/triage-ticket.ts. A ticket is not filed when
+   *  specific_problem is under `specificProblemBelow` (a placeholder such as
+   *  "New ticket request") or stated_by_user is under `statedByUserBelow` (a
+   *  problem the visitor never described). The model is told to ask instead. */
+  triageHold: { specificProblemBelow: 0.5, statedByUserBelow: 0.5 },
 } as const
 
 /**
@@ -81,7 +91,8 @@ export const CAPABILITIES: readonly Capability[] = [
   },
   {
     title: 'Looks up an IT ticket',
-    detail: 'Fetches the status, title, and assignee for a ticket id from the IT sub-agent.',
+    detail:
+      'Fetches the status, title, and assignee for a ticket id from the IT sub-agent, plus the priority and triage of any ticket filed since triage began.',
     mechanism: 'lookup_ticket → ItAgent',
     example: 'Look up ticket 42',
   },
@@ -90,6 +101,12 @@ export const CAPABILITIES: readonly Capability[] = [
     detail: 'Writes a short title and a description, then gets the next ticket id, open and unassigned.',
     mechanism: 'create_ticket → ItAgent',
     example: 'My screen keeps flickering, file a ticket',
+  },
+  {
+    title: 'Triages every ticket',
+    detail: `Before a ticket is filed, a second model judges its category, how urgent it is, whether it is a security incident, and whether one of the fixtures or the ${SITE.triageCandidates} most recent tickets already covers it. Code turns that into a priority from P1 to P4, and a security incident is always P1. The priority and any duplicate or related ticket are stored with the ticket, and he tells you about them.`,
+    mechanism: `jev.triage_ticket · ${SITE.jevModel}`,
+    example: 'My laptop was stolen at the airport, please file a ticket',
   },
   {
     title: 'Chains steps in one question',
@@ -111,9 +128,10 @@ export const CAPABILITIES: readonly Capability[] = [
   },
   {
     title: 'Asks instead of guessing',
-    detail: 'When something is missing, such as a ticket id, he asks for it rather than inventing one.',
-    mechanism: 'system prompt',
-    example: 'Can you check on my ticket?',
+    detail:
+      'When something is missing, such as a ticket id or what is actually wrong, he asks for it rather than inventing it. A ticket for a problem you never described is held back before it is filed, even if the model tries.',
+    mechanism: 'system prompt · jev.triage_ticket',
+    example: 'Create me a ticket',
   },
   {
     title: 'Declines what he cannot do',
@@ -148,7 +166,7 @@ export const CAPABILITIES: readonly Capability[] = [
   {
     title: 'Shows his work',
     detail:
-      'Every tool call, its arguments, and its raw result render above the answer, between the two checks, with the pass count and round-trip time.',
+      'Every tool call, its arguments, and its raw result render above the answer, alongside the scores from each check, with the pass count and round-trip time.',
     mechanism: 'trace[]',
   },
   {
@@ -165,6 +183,7 @@ export const GUARDRAILS: readonly string[] = [
   `${SITE.maxIterations} passes per question`,
   `Refused before the model runs: injection above ${SITE.guardBlock.injectionAbove}, or above ${SITE.guardBlock.suspiciousAbove} when off-topic`,
   `Answer replaced when it leaks his instructions: prompt_leak above ${SITE.answerReplace.promptLeakAbove}`,
+  `Ticket held until you describe the problem: specific_problem or stated_by_user under ${SITE.triageHold.specificProblemBelow}`,
 ]
 
 export const CANNOT: readonly string[] = [
@@ -178,7 +197,7 @@ export const STACK: ReadonlyArray<{ label: string; detail: string }> = [
   { label: 'Cloudflare Workers', detail: 'runtime' },
   { label: 'Durable Objects', detail: 'per-instance memory' },
   { label: 'Workers AI', detail: 'inference' },
-  { label: 'TypeSafe Jev', detail: 'question and answer checks' },
+  { label: 'TypeSafe Jev', detail: 'question, ticket, and answer checks' },
   { label: 'agents SDK', detail: `v${SITE.agentsSdkVersion}` },
   { label: 'React + Vite', detail: 'this page' },
   { label: 'TanStack Query', detail: 'request state' },

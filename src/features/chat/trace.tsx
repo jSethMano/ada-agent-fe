@@ -190,16 +190,28 @@ function breakableId(id: string): ReactNode {
 
 function AnswerLine({ answer }: { answer: CheckAnswer }) {
   const tone = answer.flagged ? 'text-danger' : 'text-ink-3'
+  const note = answerNote(answer)
   return (
-    // `contents` lets the four cells join the parent grid, so ids, types, and
-    // values line up in columns across every answer in the check.
+    // `contents` lets the cells join the parent grid, so ids, types, and values
+    // line up in columns across every answer in the check. Below `sm` the grid
+    // has three columns and a note drops onto its own line under the value:
+    // a Choice answer's label and confidence do not fit beside it on a 320px
+    // phone. An empty note takes no line there, but keeps its column at `sm`.
     <span className="contents">
       <code className="font-mono text-[11.5px] text-ink-3">{breakableId(answer.id)}</code>
       <code className="font-mono text-[11.5px] text-ink-3">{answer.type}</code>
       <code className={cn('font-mono text-[11.5px] tabular-nums', answer.flagged ? 'text-danger' : 'text-ink-2')}>
         {formatValue(answer.value)}
       </code>
-      <code className={cn('font-mono text-[11.5px]', tone)}>{answerNote(answer)}</code>
+      <code
+        className={cn(
+          'font-mono text-[11.5px]',
+          tone,
+          note ? 'col-start-3 sm:col-start-auto' : 'hidden sm:inline',
+        )}
+      >
+        {note}
+      </code>
     </span>
   )
 }
@@ -236,7 +248,7 @@ function CheckRow({ entry, ordinal }: { entry: CheckEntry; ordinal: number }) {
       // phone without pushing the flag out of the row.
       detail={
         entry.status === 'ok' ? (
-          <span className="mt-1 grid grid-cols-[auto_auto_auto_1fr] items-baseline gap-x-2 gap-y-0.5 sm:gap-x-3">
+          <span className="mt-1 grid grid-cols-[auto_auto_1fr] items-baseline gap-x-2 gap-y-0.5 sm:grid-cols-[auto_auto_auto_1fr] sm:gap-x-3">
             {entry.answers.map((answer) => (
               <AnswerLine key={answer.id} answer={answer} />
             ))}
@@ -304,6 +316,7 @@ export function Trace({ trace, iterations, elapsedMs, failed }: TraceProps) {
   const checkCount = trace.length - toolCount
   const blocked = trace.some((entry) => isCheck(entry) && entry.action === 'blocked')
   const replaced = trace.some((entry) => isCheck(entry) && entry.action === 'replaced')
+  const held = trace.some((entry) => isCheck(entry) && entry.action === 'held')
 
   if (trace.length === 0 && !failed) {
     return (
@@ -343,6 +356,7 @@ export function Trace({ trace, iterations, elapsedMs, failed }: TraceProps) {
         {checkCount > 0 && (
           <Stat value={String(checkCount)} label={checkCount === 1 ? 'check' : 'checks'} />
         )}
+        {held && <span className="whitespace-nowrap text-danger">ticket held</span>}
         {replaced && <span className="whitespace-nowrap text-danger">answer replaced</span>}
         {elapsedMs !== undefined && <Stat value={formatDuration(elapsedMs)} label="roundtrip" />}
       </header>

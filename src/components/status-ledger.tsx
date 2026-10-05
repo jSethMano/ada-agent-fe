@@ -1,42 +1,44 @@
 interface Group {
-  label: string
-  items: string[]
+  label: string;
+  items: string[];
 }
 
 const GROUPS: Group[] = [
   {
-    label: 'shipped',
+    label: "shipped",
     items: [
-      'Router agent with a five-pass tool-calling loop',
-      'IT sub-agent reachable over a cross-Durable-Object fetch',
-      'Per-instance memory, scoped by the URL path segment',
-      'Tickets you file persist in the sub-agent and survive across conversations',
-      'Past conversations kept in the browser, traces and all, and resumable',
-      'Full tool trace returned to the client and rendered on this page',
-      'Every question screened by Jev before the model runs; clear attacks refused without a model call',
-      'Every answer checked by Jev against the tool results; one that leaks his instructions is replaced',
-      'Rate limited to 10 requests per minute per IP',
+      "Router agent with a five-pass tool-calling loop",
+      "IT sub-agent reachable over a cross-Durable-Object fetch",
+      "Per-instance memory, scoped by the URL path segment",
+      "Tickets you file persist in the sub-agent and survive across conversations",
+      "Past conversations kept in the browser, traces and all, and resumable",
+      "Full tool trace returned to the client and rendered on this page",
+      "Every question screened by Jev before the model runs; clear attacks refused without a model call",
+      "Every answer checked by Jev against the tool results; one that leaks his instructions is replaced",
+      "Every new ticket triaged by Jev: category, priority, security flag, and a link to a duplicate or related ticket",
+      "Sub-agents reachable only through the router, never directly from the internet",
+      "Rate limited to 10 requests per minute per IP",
     ],
   },
   {
-    label: 'next',
+    label: "next",
     items: [
-      'HR and Docs sub-agents, same contract as IT',
-      'Replace the cross-DO fetch with MCP via createMcpHandler',
-      'Stream the answer so tool calls appear as they resolve',
-      'Add an iteration index per trace entry so passes can be grouped',
+      "HR and Docs sub-agents, same contract as IT",
+      "Replace the cross-DO fetch with MCP via createMcpHandler",
+      "Stream the answer so tool calls appear as they resolve",
+      "Add an iteration index per trace entry so passes can be grouped",
     ],
   },
   {
-    label: 'known limits',
+    label: "known limits",
     items: [
-      'Tickets 42 and 77 are seeded fixtures, not records from a real system.',
-      'No auth. The instance id is a memory scope, not a credential.',
-      'The Worker sends no CORS headers. Dev proxies through Vite, production through a service binding.',
-      'Only the Jev checks have evals. Tool selection is still verified by hand.',
+      "Tickets 42 and 77 are seeded fixtures, not records from a real system.",
+      "No auth. The instance id is a memory scope, not a credential.",
+      "The Worker sends no CORS headers. Dev proxies through Vite, production through a service binding.",
+      "Only the Jev checks have evals. Tool selection is still verified by hand.",
     ],
   },
-]
+];
 
 export function StatusLedger() {
   return (
@@ -57,7 +59,10 @@ export function StatusLedger() {
               </h3>
               <ul className="mt-4 space-y-3.5">
                 {group.items.map((item) => (
-                  <li key={item} className="text-[14px] leading-relaxed text-ink-2">
+                  <li
+                    key={item}
+                    className="text-[14px] leading-relaxed text-ink-2"
+                  >
                     {item}
                   </li>
                 ))}
@@ -67,5 +72,5 @@ export function StatusLedger() {
         </div>
       </div>
     </section>
-  )
+  );
 }
