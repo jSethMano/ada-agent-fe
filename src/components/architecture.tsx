@@ -60,7 +60,7 @@ const LOOP_STEPS = [
   },
   {
     verb: 'Check',
-    detail: `Before the model runs, Jev (${SITE.jevModel}) scores the question for injection, scope, and pasted secrets. A clear attack (above ${SITE.guardBlock.injectionAbove}), or a suspicious question that is not helpdesk work, ends the turn here with a fixed refusal; everything else goes on with its scores in the trace.`,
+    detail: `Before the model runs, Jev (${SITE.jevModel}) scores the question for injection, scope, and pasted secrets. A clear attack (above ${SITE.guardBlock.injectionAbove}), or a suspicious question that is not helpdesk work, ends the turn here with a fixed refusal; everything else goes on with its scores in the trace. The same request labels the question’s domain (IT, HR, docs, general, or out of scope), recorded for now; once HR and Docs exist, it picks which tools the model sees.`,
   },
   {
     verb: 'Decide',

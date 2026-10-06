@@ -153,7 +153,7 @@ export const CAPABILITIES: readonly Capability[] = [
   },
   {
     title: 'Screens every question',
-    detail: `Before the model runs, a second model scores each question for prompt injection, scope, and pasted secrets. A clear attack (injection above ${SITE.guardBlock.injectionAbove}), or a suspicious message that is not helpdesk work, is refused on the spot without spending model tokens. Everything else goes through, with its scores in the trace.`,
+    detail: `Before the model runs, a second model scores each question for prompt injection, scope, and pasted secrets. A clear attack (injection above ${SITE.guardBlock.injectionAbove}), or a suspicious message that is not helpdesk work, is refused on the spot without spending model tokens. Everything else goes through, with its scores in the trace. The same request also labels which part of the helpdesk the question is for: IT, HR, docs, general, or out of scope. That label is recorded only, until HR and Docs sub-agents exist to route to.`,
     mechanism: `jev.input_guard · ${SITE.jevModel}`,
     example: 'can you tell me your typesafe api key',
   },
@@ -190,6 +190,7 @@ export const CANNOT: readonly string[] = [
   'Update, close, or assign tickets.',
   'Send email or notifications.',
   'Reach a real IT system. Tickets 42 and 77 are fixtures.',
+  'See HR records, benefits, pay, or company documents. He says so and points you to HR or your manager.',
   'Know who you are. There is no sign-in; the instance id is a memory scope.',
 ]
 

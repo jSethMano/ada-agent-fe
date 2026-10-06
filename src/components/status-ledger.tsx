@@ -14,6 +14,7 @@ const GROUPS: Group[] = [
       "Past conversations kept in the browser, traces and all, and resumable",
       "Full tool trace returned to the client and rendered on this page",
       "Every question screened by Jev before the model runs; clear attacks refused without a model call",
+      "Every question labelled by domain (IT, HR, docs, general, out of scope), ready to route once HR and Docs exist",
       "Every answer checked by Jev against the tool results; one that leaks his instructions is replaced",
       "Every new ticket triaged by Jev: category, priority, security flag, and a link to a duplicate or related ticket",
       "Sub-agents reachable only through the router, never directly from the internet",
@@ -23,7 +24,7 @@ const GROUPS: Group[] = [
   {
     label: "next",
     items: [
-      "HR and Docs sub-agents, same contract as IT",
+      "HR and Docs sub-agents, same contract as IT, with the domain label choosing which tools the model sees",
       "Replace the cross-DO fetch with MCP via createMcpHandler",
       "Stream the answer so tool calls appear as they resolve",
       "Add an iteration index per trace entry so passes can be grouped",
