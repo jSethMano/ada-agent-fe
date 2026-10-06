@@ -82,7 +82,9 @@ export function ChakConsole() {
       className="flex min-h-[32rem] flex-col border border-rule bg-surface lg:h-[min(72vh,42rem)]"
     >
       <header className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-rule px-4 py-2.5 sm:px-6">
-        <p className="flex min-w-0 items-baseline gap-2">
+        {/* Wraps the path under its label on a narrow phone. Side by side, the
+            two were wider than a 320px screen and pushed the page sideways. */}
+        <p className="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-0.5">
           <span className="font-mono text-[11px] whitespace-nowrap text-ink-3">memory scope</span>
           <code className="truncate font-mono text-[12px] text-ink-2">{instancePath(instance)}</code>
         </p>

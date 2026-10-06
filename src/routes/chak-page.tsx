@@ -34,8 +34,11 @@ export function ChakPage() {
         <section
           aria-labelledby="hero-heading"
           className={cn(
-            'mx-auto grid max-w-[1240px] gap-x-12 gap-y-6 px-5 pt-6 pb-16 sm:gap-y-8 sm:px-8 sm:pt-10 lg:items-center lg:pb-20',
-            chatEnlarged ? 'lg:grid-cols-1 lg:gap-y-6 lg:pt-8' : 'lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:pt-16',
+            // grid-cols-1 is minmax(0,1fr): the column is the space available, so
+            // content that cannot shrink overflows its own box rather than
+            // widening the page on a phone.
+            'mx-auto grid max-w-[1240px] grid-cols-1 gap-x-12 gap-y-6 px-5 pt-6 pb-16 sm:gap-y-8 sm:px-8 sm:pt-10 lg:items-center lg:pb-20',
+            chatEnlarged ? 'lg:gap-y-6 lg:pt-8' : 'lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:pt-16',
           )}
         >
           <div>

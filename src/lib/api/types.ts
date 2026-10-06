@@ -36,6 +36,9 @@ export interface ToolCallEntry {
   result: unknown
   /** Sub-agent dispatch time. Absent on older turns. */
   ms?: number
+  /** The model wrote this call into its reply as text instead of making it,
+   *  and the Worker parsed it out and ran it. */
+  fromText?: boolean
 }
 
 /** A Jev (TypeSafe System One) check. It records typed answers and

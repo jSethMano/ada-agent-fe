@@ -110,7 +110,7 @@ export const CAPABILITIES: readonly Capability[] = [
   },
   {
     title: 'Chains steps in one question',
-    detail: `Runs the model up to ${SITE.maxIterations} times, folding each tool result back in before deciding again.`,
+    detail: `Runs the model up to ${SITE.maxIterations} times, folding each tool result back in before deciding again. When the model writes a tool call into its reply as text instead of making it, the router reads the call out and runs it, marked in the trace.`,
     mechanism: `router loop · max ${SITE.maxIterations} passes`,
     example: 'Check ticket 42, and if it is not resolved open a follow-up for the same VPN issue',
   },

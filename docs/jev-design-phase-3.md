@@ -187,21 +187,64 @@ The rule can change without asking Jev again.
   - "Look up ticket 80" returned the priority and the triage.
   - Verification was clean on both turns.
 
-## 8. Found, not fixed: the chained example is broken
+## 8. The chained example: found broken, fixed 2026-10-06
 
 The page's "Chains steps in one question" example is "Check ticket 42, and if it is not resolved open a
 follow-up for the same VPN issue".
 
-- **What happens.** Scout looks up 42, then *writes* `[create_ticket(...)]` as text instead of calling the tool.
-  No ticket is filed.
-- **How often.** 3 of 3 runs with this phase's tool description, and 3 of 3 with the original description, so
-  this phase didn't cause it. The system prompt already forbids text tool calls, so it's a known Scout failure.
-- **What catches it.** The Phase 2 answer check flagged every one of those answers: `unconfirmed_action`
-  0.77–0.82.
-- **Options:**
-  - Change the page example.
-  - Try the commented-out fallback model (`llama-3.3-70b-instruct-fp8-fast`).
-  - Retry the turn when `unconfirmed_action` is high.
+**The failure.** Scout looked up 42, then *wrote* `[create_ticket(title="…", description="…")]` into its reply
+instead of calling the tool. The router only acts on structured `tool_calls`, at `index.ts`
+(`toolCalls.length === 0`), so that text went out as the answer and nothing was filed.
+
+- It failed 6 of 6 runs on 2026-10-05, with both the original and the Phase 3 tool description.
+- The Phase 2 check flagged every one: `unconfirmed_action` 0.77–0.82.
+
+**What didn't work:**
+- **Asking again.** A correction message ("you wrote the call as text, use the tool-call interface") got the call
+  written as text again, 4 of 4.
+- **Forcing the call.** Workers AI's input schema for this model has no `tool_choice`.
+
+**The fix: parse the call the model meant.** It lives in `ada-agent/src/text-tool-call.ts`, as `textToolCall`.
+
+- **When it runs:** a reply with no structured call, but with a known tool written as text.
+- **What counts as a call.** Parsing is strict, and only two forms count:
+  - keyword arguments, `name(key="value", …)`
+  - JSON, `{"name": …, "parameters"|"arguments": …}`
+
+  Prose like "I can use create_ticket" doesn't count, and neither does a valueless `create_ticket(title,
+  description)`.
+- **It's run like any other call.** A matching reply becomes a structured call through the normal path, so
+  triage and the hold still apply. A made-up "example" call would be held by `stated_by_user`.
+- **History stores the structured call, with no text,** so later turns never show the model its own habit.
+- **The trace marks it.** The row carries `fromText: true`, and the front end prints "parsed from text" beside
+  the tool name, in muted ink because the call ran.
+- **It's logged** as `{"event":"tool_call.from_text","instance":...,"tool":...}`.
+
+**A side effect.** Yesterday's harness line in the tool description ("if they only ask for a ticket, ask them what
+the problem is") made Scout ask for "a brief title and description" on the page example, 3 of 4 times. The line
+now also says that asking for a follow-up to an existing ticket counts as saying what's wrong, and that the model
+writes the title and description itself and never asks the user for them. `stated_by_user` also names "a
+follow-up to a ticket in `existing_tickets`" explicitly. On the shorter "…open a follow-up" wording it rose from
+0.62–0.78 to 0.82–0.84.
+
+**Verified, 2026-10-06:**
+
+- 65 of 65 Worker unit tests. The parser cases cover:
+  - Scout's real reply.
+  - Quotes, escapes, commas inside values, and bare numbers.
+  - JSON with parameters as an object and as a string.
+  - The first of several calls.
+  - Prose and valueless calls, which are rejected.
+  - Calls that never close.
+- The triage eval, 22 of 22, adding the short "…open a follow-up" wording.
+- `wrangler dev`:
+
+  | Prompt | Result |
+  | --- | --- |
+  | Page example | filed, 5 of 5, every one parsed from text, related to 42 |
+  | "…open a follow-up" | filed, 4 of 4 |
+  | "create me a ticket" | asked what's wrong, 3 of 3, without asking for a title |
+  | Flickering screen, look up 42, capital of France | unchanged |
 
 ## 9. Harness: a ticket needs a problem the visitor described (2026-10-05)
 

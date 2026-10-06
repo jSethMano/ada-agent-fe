@@ -131,6 +131,11 @@ function ToolRow({ entry, ordinal }: { entry: ToolCallEntry; ordinal: number }) 
         <>
           <span className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
             <code className="font-mono text-[13px] font-medium text-ink">{entry.tool}</code>
+            {/* Muted, not danger: the call ran. It is marked so a rescued call
+                never passes for one the model made. */}
+            {entry.fromText && (
+              <code className="font-mono text-[11.5px] text-ink-3">parsed from text</code>
+            )}
             {argPreview.map((pair) => (
               <code key={pair} className="font-mono text-[11.5px] text-ink-3">
                 {pair}
