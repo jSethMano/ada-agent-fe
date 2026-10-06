@@ -3,8 +3,9 @@ import { ChakSprite } from '@/components/chak-sprite'
 import { Button } from '@/components/ui/button'
 import { SITE } from '@/lib/site'
 import { Answer } from './answer'
+import { ApprovalCard } from './approval-card'
 import { Trace } from './trace'
-import type { Turn } from '@/lib/api/types'
+import type { ApprovalDecision, Turn } from '@/lib/api/types'
 
 /** The speaker label sits in a fixed mono gutter so the thread reads as a
  *  transcript rather than a stack of chat bubbles. Alternating bubbles are the
@@ -28,7 +29,17 @@ function Row({ speaker, children }: { speaker: 'you' | 'chak'; children: React.R
   )
 }
 
-export function TurnView({ turn, onRetry }: { turn: Turn; onRetry: (id: string) => void }) {
+interface TurnViewProps {
+  turn: Turn
+  onRetry: (id: string) => void
+  onDecide: (id: string, decision: Omit<ApprovalDecision, 'id'>) => void
+  /** The decision in flight for this turn, if any. */
+  deciding: ApprovalDecision['action'] | null
+  /** A request is in flight, for this turn or another. */
+  busy: boolean
+}
+
+export function TurnView({ turn, onRetry, onDecide, deciding, busy }: TurnViewProps) {
   const failedWithTrace = turn.status === 'failed' && (turn.trace?.length ?? 0) > 0
   // A 502 carries a trace too (the guard row is recorded even when the model
   // call throws), so only the 500 means the loop ran out of passes. Turns saved
@@ -48,6 +59,27 @@ export function TurnView({ turn, onRetry }: { turn: Turn; onRetry: (id: string) 
             <span className="font-mono text-[11.5px] text-ink-3">routing</span>
             <span className="sr-only">Chak is working on your question.</span>
           </div>
+        )}
+
+        {/* The loop paused on a ticket. The trace so far stays in place, and the
+            decision resumes this same row, so nothing jumps when it comes back. */}
+        {turn.status === 'awaiting' && turn.approval && (
+          <>
+            <Trace
+              trace={turn.trace ?? []}
+              iterations={turn.iterations}
+              elapsedMs={turn.elapsedMs}
+              approval={turn.approvalClosed ? 'closed' : 'waiting'}
+            />
+            <ApprovalCard
+              // Remounts for a second ticket in the same turn, so no edit carries over.
+              key={turn.approval.id}
+              turn={{ ...turn, approval: turn.approval }}
+              deciding={deciding}
+              busy={busy}
+              onDecide={(decision) => onDecide(turn.id, decision)}
+            />
+          </>
         )}
 
         {turn.status === 'answered' && (

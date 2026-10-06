@@ -2,7 +2,7 @@
  * Four prompts, each exercising a different path through the router.
  *
  * The `exercises` label is not decoration. A first-time visitor needs to know
- * that the third one answering with no tool call is the interesting result, not
+ * that the last one answering with no tool call is the interesting result, not
  * a failure: it shows the router deciding, rather than reaching for a tool
  * because a tool exists.
  *
@@ -27,7 +27,7 @@ export const SUGGESTED_PROMPTS: readonly SuggestedPrompt[] = [
     exercises: 'two tool calls',
   },
   {
-    text: "What's the capital of France?",
+    text: 'What makes a strong password?',
     exercises: 'no tools, answers directly',
   },
 ]

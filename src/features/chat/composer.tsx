@@ -62,7 +62,7 @@ export function Composer({ onSubmit, disabled }: ComposerProps) {
               send()
             }
           }}
-          placeholder="Ask about a ticket, a policy, or anything else"
+          placeholder="Ask about a ticket or an IT problem"
           // 16px below sm: iOS Safari zooms the page into any field set smaller.
           className="max-h-40 min-h-9 resize-none border-rule bg-paper px-2.5 py-2 text-base leading-relaxed placeholder:text-ink-3 sm:text-[15px] md:text-[15px] pointer-coarse:min-h-11"
         />

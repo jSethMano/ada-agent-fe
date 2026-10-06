@@ -2,6 +2,10 @@
 
 Status: requirements only (output of `/sc:brainstorm`, 2026-10-04). Next step: `/sc:design`, one phase at a time.
 
+**Scope change (2026-10-06): Chak is an IT helpdesk only.** Phase 4 (front-door router) is retired, because there
+will be no HR or Docs sub-agents to route to. `in_scope` now asks whether a message is workplace IT, and the
+model declines HR, policy, and general questions. See `jev-design-phase-4.md`.
+
 Covers both repos. Most of the work is in `ada-agent` (the Worker). Trace rendering is in this repo.
 
 ---

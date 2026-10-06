@@ -1,6 +1,8 @@
 # Jev in Chak: design for Phase 4 (front-door router)
 
-Status: implemented (2026-10-06), recorded only. Implements requirements F4.1–F4.4 from
+Status: **retired (2026-10-06).** Chak's scope narrowed to the IT helpdesk only, so there are no HR or Docs sub-agents
+to route to. The `domain` question was removed from the input guard, and `in_scope` now means workplace IT. The
+design below is kept as a record. It was implemented (2026-10-06), recorded only. Implements requirements F4.1–F4.4 from
 [`jev-requirements.md`](./jev-requirements.md), with one deliberate deviation from F4.2 (§0).
 
 ---

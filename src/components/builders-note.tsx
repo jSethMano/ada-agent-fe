@@ -14,9 +14,10 @@ export function BuildersNote() {
 
           <div className="mt-6 space-y-5 font-pixel text-[17px] leading-[1.65] text-ink-2">
             <p>
-              Chak is an internal helpdesk agent for a company that does not exist. Employees ask
-              him about IT, HR, and internal documentation. He either answers from the model
-              directly or hands the question to a sub-agent that holds real tools.
+              Chak is an internal IT helpdesk agent for a company that does not exist. Employees
+              ask him about broken laptops, VPN trouble, password resets, and their tickets. He
+              either answers from the model directly or hands the question to the IT sub-agent,
+              which holds real tools. Anything that is not IT, he declines.
             </p>
             <p>
               The part worth looking at is the loop. Chak has no tools of his own. He has a router

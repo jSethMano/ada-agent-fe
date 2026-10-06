@@ -2,7 +2,10 @@ import { Fragment, useId, useState, type ReactNode } from 'react'
 import { CaretRightIcon } from '@phosphor-icons/react'
 import { cn } from '@/lib/utils'
 import {
+  isApproval,
   isCheck,
+  isToolCall,
+  type ApprovalEntry,
   type CheckAnswer,
   type CheckEntry,
   type ToolCallEntry,
@@ -274,6 +277,38 @@ function CheckRow({ entry, ordinal }: { entry: CheckEntry; ordinal: number }) {
   )
 }
 
+/**
+ * The visitor's decision on a ticket that waited for approval. Prefixed
+ * `human.` the way checks are prefixed `jev.`, so it can never be mistaken for
+ * a call the router made. The timing is how long the ticket waited.
+ */
+function ApprovalRow({ entry, ordinal }: { entry: ApprovalEntry; ordinal: number }) {
+  const editedFields = Object.keys(entry.edits ?? {})
+
+  return (
+    <DisclosureRow
+      ordinal={ordinal}
+      ms={entry.ms}
+      summary={
+        <span className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+          <code className="font-mono text-[13px] font-medium text-ink">human.approval</code>
+          <code className="font-mono text-[11.5px] text-ink-2">{entry.decision}</code>
+          <code className="font-mono text-[11.5px] text-ink-3">{entry.tool}</code>
+          {editedFields.length > 0 && (
+            <code className="font-mono text-[11.5px] text-ink-3">edited {editedFields.join(', ')}</code>
+          )}
+        </span>
+      }
+      panes={
+        <>
+          <Payload label="proposed" value={entry.proposed} />
+          <Payload label="decision" value={{ decision: entry.decision, edits: entry.edits ?? null }} />
+        </>
+      }
+    />
+  )
+}
+
 function Payload({ label, value }: { label: string; value: unknown }) {
   return (
     <div className="bg-paper px-3 py-2.5">
@@ -293,6 +328,9 @@ interface TraceProps {
   elapsedMs?: number
   /** The turn ended in an error (out of passes, or a call that threw). */
   failed?: boolean
+  /** The turn stopped at a ticket: still waiting for the visitor's approval,
+   *  or closed without one (they sent a new message instead). */
+  approval?: 'waiting' | 'closed'
 }
 
 /**
@@ -314,11 +352,15 @@ interface TraceProps {
  * is the Worker's fixed reply, not what the model wrote. A blocked turn has one
  * row, the guard, and 0 iterations: the answer under it is the Worker's fixed
  * refusal, because the model never saw the question, so there is nothing to check.
+ *
+ * A turn paused on a ticket ends at the ticket's triage: nothing after it has
+ * run yet. The visitor's decision adds a `human.approval` row, then the rest of
+ * the turn, and the whole trace comes back together.
  */
-export function Trace({ trace, iterations, elapsedMs, failed }: TraceProps) {
+export function Trace({ trace, iterations, elapsedMs, failed, approval }: TraceProps) {
   const multiPass = (iterations ?? 1) > 1
-  const toolCount = trace.filter((entry) => !isCheck(entry)).length
-  const checkCount = trace.length - toolCount
+  const toolCount = trace.filter(isToolCall).length
+  const checkCount = trace.filter(isCheck).length
   const blocked = trace.some((entry) => isCheck(entry) && entry.action === 'blocked')
   const replaced = trace.some((entry) => isCheck(entry) && entry.action === 'replaced')
   const held = trace.some((entry) => isCheck(entry) && entry.action === 'held')
@@ -353,7 +395,7 @@ export function Trace({ trace, iterations, elapsedMs, failed }: TraceProps) {
             direct-answer case is named here instead of as "0 tool calls". */}
         {blocked ? (
           <span className="whitespace-nowrap text-danger">blocked before the model ran</span>
-        ) : toolCount === 0 && !failed ? (
+        ) : toolCount === 0 && !failed && !approval ? (
           <span className="whitespace-nowrap text-ink-3">answered directly</span>
         ) : (
           <Stat value={String(toolCount)} label={toolCount === 1 ? 'tool call' : 'tool calls'} />
@@ -362,6 +404,10 @@ export function Trace({ trace, iterations, elapsedMs, failed }: TraceProps) {
           <Stat value={String(checkCount)} label={checkCount === 1 ? 'check' : 'checks'} />
         )}
         {held && <span className="whitespace-nowrap text-danger">ticket held</span>}
+        {approval === 'waiting' && (
+          <span className="whitespace-nowrap font-medium text-ink">waiting for your approval</span>
+        )}
+        {approval === 'closed' && <span className="whitespace-nowrap text-ink-3">ticket not filed</span>}
         {replaced && <span className="whitespace-nowrap text-danger">answer replaced</span>}
         {elapsedMs !== undefined && <Stat value={formatDuration(elapsedMs)} label="roundtrip" />}
       </header>
@@ -370,6 +416,8 @@ export function Trace({ trace, iterations, elapsedMs, failed }: TraceProps) {
         {trace.map((entry, index) =>
           isCheck(entry) ? (
             <CheckRow key={`check-${index}`} entry={entry} ordinal={index + 1} />
+          ) : isApproval(entry) ? (
+            <ApprovalRow key={`approval-${index}`} entry={entry} ordinal={index + 1} />
           ) : (
             <ToolRow key={`tool-${index}`} entry={entry} ordinal={index + 1} />
           ),

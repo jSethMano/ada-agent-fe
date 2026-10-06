@@ -43,7 +43,7 @@ function EmptyState({ onPick }: { onPick: (prompt: string) => void }) {
 export function ChakConsole() {
   const { active, history, setActiveTurns, startNew, switchTo, remove } = useConversations()
   const { instance, turns } = active
-  const { submit, retry, isPending } = useAsk(instance, turns, setActiveTurns)
+  const { submit, retry, decide, deciding, isPending } = useAsk(instance, turns, setActiveTurns)
   const threadRef = useRef<HTMLDivElement>(null)
   const seenInstance = useRef<string | null>(null)
 
@@ -111,7 +111,16 @@ export function ChakConsole() {
         {turns.length === 0 ? (
           <EmptyState onPick={submit} />
         ) : (
-          turns.map((turn) => <TurnView key={turn.id} turn={turn} onRetry={retry} />)
+          turns.map((turn) => (
+            <TurnView
+              key={turn.id}
+              turn={turn}
+              onRetry={retry}
+              onDecide={decide}
+              deciding={deciding?.turnId === turn.id ? deciding.action : null}
+              busy={isPending}
+            />
+          ))
         )}
       </div>
 

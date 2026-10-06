@@ -1,56 +1,12 @@
-import { cn } from '@/lib/utils'
 import { AGENT, SITE } from '@/lib/site'
 
-interface SubAgent {
-  name: string
-  binding: string
-  live: boolean
-  transport: string
-  tools: string[]
-}
-
-const SUB_AGENTS: SubAgent[] = [
-  {
-    name: 'IT',
-    binding: 'ItAgent',
-    live: true,
-    transport: 'cross-DO fetch',
-    tools: ['lookup_ticket', 'create_ticket'],
-  },
-  {
-    name: 'HR',
-    binding: 'HrAgent',
-    live: false,
-    transport: 'MCP',
-    tools: ['leave_balance', 'benefits_lookup'],
-  },
-  {
-    name: 'Docs',
-    binding: 'DocsAgent',
-    live: false,
-    transport: 'MCP',
-    tools: ['search_policies'],
-  },
-]
-
-/** Connector segments. Purely presentational, hidden from assistive tech, and
- *  dropped entirely on mobile where the stack order carries the same meaning. */
-function Connector({ side }: { side: 'left' | 'center' | 'right' }) {
-  return (
-    <div className="relative h-8">
-      {/* Horizontal sits at top-0 so it meets the vertical dropping out of the
-          router box exactly, with no gap at the junction. */}
-      <span
-        className={cn(
-          'absolute top-0 h-px bg-rule-strong',
-          side === 'left' && 'right-0 left-1/2',
-          side === 'center' && 'inset-x-0',
-          side === 'right' && 'left-0 right-1/2',
-        )}
-      />
-      <span className="absolute top-0 bottom-0 left-1/2 w-px bg-rule-strong" />
-    </div>
-  )
+/** The one sub-agent. Its tools are the router's TOOLS in ada-agent/src/index.ts,
+ *  all dispatched to ItAgent. */
+const IT_AGENT = {
+  name: 'IT',
+  binding: 'ItAgent',
+  transport: 'cross-DO fetch',
+  tools: ['lookup_ticket', 'list_my_tickets', 'create_ticket'],
 }
 
 const LOOP_STEPS = [
@@ -60,7 +16,7 @@ const LOOP_STEPS = [
   },
   {
     verb: 'Check',
-    detail: `Before the model runs, Jev (${SITE.jevModel}) scores the question for injection, scope, and pasted secrets. A clear attack (above ${SITE.guardBlock.injectionAbove}), or a suspicious question that is not helpdesk work, ends the turn here with a fixed refusal; everything else goes on with its scores in the trace. The same request labels the question’s domain (IT, HR, docs, general, or out of scope), recorded for now; once HR and Docs exist, it picks which tools the model sees.`,
+    detail: `Before the model runs, Jev (${SITE.jevModel}) scores the question for injection, scope, and pasted secrets. A clear attack (above ${SITE.guardBlock.injectionAbove}), or a suspicious question that is not IT work, ends the turn here with a fixed refusal; everything else goes on with its scores in the trace.`,
   },
   {
     verb: 'Decide',
@@ -68,7 +24,7 @@ const LOOP_STEPS = [
   },
   {
     verb: 'Dispatch',
-    detail: 'Each tool call is routed to its sub-agent stub and awaited. Before create_ticket goes out, Jev triages the new ticket and code sets its priority, so both are filed with it. Each result is recorded into the trace and goes back into the message list as a tool-role turn, keyed by tool_call_id.',
+    detail: 'Each tool call is routed to its sub-agent stub and awaited. Before create_ticket goes out, Jev triages the new ticket and code sets its priority. Then the loop pauses: the Durable Object saves where it stopped, and the ticket comes back to you to approve, edit, or decline. Your decision arrives as the next request and the loop resumes there. Each result is recorded into the trace and goes back into the message list as a tool-role turn, keyed by tool_call_id.',
   },
   {
     verb: 'Verify',
@@ -88,10 +44,10 @@ export function Architecture() {
           id="architecture-heading"
           className="font-pixel text-[30px] leading-[1.15] text-ink sm:text-[36px]"
         >
-          One router, three sub-agents
+          One router, one IT sub-agent
         </h2>
         <p className="mt-4 max-w-[62ch] font-pixel text-[17px] leading-[1.65] text-ink-2">
-          Every box below is a Durable Object. The router holds no tools; the sub-agents hold no
+          Every box below is a Durable Object. The router holds no tools; the sub-agent holds no
           conversation. That split is what makes each one testable on its own.
         </p>
 
@@ -129,58 +85,25 @@ export function Architecture() {
             </dl>
           </div>
 
-          <div aria-hidden className="mx-auto hidden h-8 w-px bg-rule-strong sm:block" />
-          {/* Phones stack the sub-agents on a left rail; this joins it to the router. */}
-          <div aria-hidden className="h-4 w-px bg-rule sm:hidden" />
-          <div aria-hidden className="hidden grid-cols-3 sm:grid">
-            <Connector side="left" />
-            <Connector side="center" />
-            <Connector side="right" />
-          </div>
+          <div aria-hidden className="mx-auto h-8 w-px bg-rule-strong" />
 
-          {/* Tier 2: sub-agents. Status is carried by border treatment and a word,
-              never by a coloured dot. */}
-          <ul className="grid gap-4 border-l border-rule pl-5 sm:grid-cols-3 sm:border-l-0 sm:pl-0">
-            {SUB_AGENTS.map((agent) => (
-              <li
-                key={agent.name}
-                className={cn(
-                  'bg-paper px-4 py-3.5',
-                  agent.live ? 'border border-rule-strong' : 'border border-dashed border-rule',
-                )}
-              >
-                <div className="flex items-baseline justify-between gap-3">
-                  <h3
-                    className={cn(
-                      'font-pixel text-[18px]',
-                      agent.live ? 'text-ink' : 'text-ink-3',
-                    )}
-                  >
-                    {agent.name}
-                  </h3>
-                  <span className="font-mono text-[11px] text-ink-3">
-                    {agent.live ? 'live' : 'planned'}
-                  </span>
-                </div>
-                <p className="mt-1 font-mono text-[11px] text-ink-3">
-                  {agent.binding} · {agent.transport}
-                </p>
-                <ul className="mt-3 space-y-1 border-t border-rule pt-2.5">
-                  {agent.tools.map((tool) => (
-                    <li
-                      key={tool}
-                      className={cn(
-                        'font-mono text-[11.5px]',
-                        agent.live ? 'text-ink-2' : 'text-ink-3',
-                      )}
-                    >
-                      {tool}
-                    </li>
-                  ))}
-                </ul>
-              </li>
-            ))}
-          </ul>
+          {/* Tier 2: the IT sub-agent */}
+          <div className="mx-auto max-w-md border border-rule-strong bg-paper px-4 py-3.5">
+            <div className="flex items-baseline justify-between gap-3">
+              <h3 className="font-pixel text-[18px] text-ink">{IT_AGENT.name}</h3>
+              <span className="font-mono text-[11px] text-ink-3">sub-agent</span>
+            </div>
+            <p className="mt-1 font-mono text-[11px] text-ink-3">
+              {IT_AGENT.binding} · {IT_AGENT.transport}
+            </p>
+            <ul className="mt-3 space-y-1 border-t border-rule pt-2.5">
+              {IT_AGENT.tools.map((tool) => (
+                <li key={tool} className="font-mono text-[11.5px] text-ink-2">
+                  {tool}
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
 
         {/* The loop, in the order it runs */}

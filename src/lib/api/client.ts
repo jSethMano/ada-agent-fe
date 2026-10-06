@@ -1,5 +1,12 @@
 import { AGENT } from '@/lib/site'
-import { ChakError, type AskErrorBody, type AskResponse, type TraceEntry } from './types'
+import {
+  ChakError,
+  type ApprovalDecision,
+  type AskErrorBody,
+  type AskResponse,
+  type PendingApproval,
+  type TraceEntry,
+} from './types'
 
 /**
  * Base URL for the Worker.
@@ -35,8 +42,27 @@ function isTraceEntry(entry: unknown): entry is TraceEntry {
       )
     )
   }
+  if (entry.kind === 'approval') {
+    return (
+      typeof entry.tool === 'string' &&
+      typeof entry.decision === 'string' &&
+      typeof entry.ms === 'number' &&
+      isRecord(entry.proposed)
+    )
+  }
   // No `kind` is how the Worker sent tool calls before checks existed.
   return (entry.kind === undefined || entry.kind === 'tool') && typeof entry.tool === 'string'
+}
+
+function isPendingApproval(value: unknown): value is PendingApproval {
+  return (
+    isRecord(value) &&
+    typeof value.id === 'string' &&
+    typeof value.tool === 'string' &&
+    isRecord(value.args) &&
+    typeof value.args.title === 'string' &&
+    typeof value.args.description === 'string'
+  )
 }
 
 /** Keeps the rows that match a known shape and drops the rest one at a time,
@@ -45,9 +71,23 @@ function normalizeTrace(value: unknown): TraceEntry[] {
   return Array.isArray(value) ? value.filter(isTraceEntry) : []
 }
 
-export async function ask(
+/** Sends a new message. */
+export function ask(instance: string, question: string, signal?: AbortSignal): Promise<AskResponse> {
+  return post(instance, { question }, signal)
+}
+
+/** Sends the visitor's decision on a waiting ticket, which resumes the turn. */
+export function decide(
   instance: string,
-  question: string,
+  decision: ApprovalDecision,
+  signal?: AbortSignal,
+): Promise<AskResponse> {
+  return post(instance, { decision }, signal)
+}
+
+async function post(
+  instance: string,
+  body: { question: string } | { decision: ApprovalDecision },
   signal?: AbortSignal,
 ): Promise<AskResponse> {
   const url = `${API_BASE_URL}${instancePath(instance)}`
@@ -57,7 +97,7 @@ export async function ask(
     response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ question }),
+      body: JSON.stringify(body),
       signal,
     })
   } catch (cause) {
@@ -68,10 +108,10 @@ export async function ask(
     )
   }
 
-  const body: unknown = await response.json().catch(() => null)
+  const payload: unknown = await response.json().catch(() => null)
 
   if (!response.ok) {
-    const failure = (body ?? {}) as AskErrorBody
+    const failure = (payload ?? {}) as AskErrorBody
 
     // A dead upstream reaches us as a bare gateway error from the Vite proxy
     // (or from Cloudflare in production), with no JSON body to explain itself.
@@ -86,14 +126,15 @@ export async function ask(
     )
   }
 
-  const ok = body as Partial<AskResponse> | null
+  const ok = isRecord(payload) ? payload : null
+  const iterations = typeof ok?.iterations === 'number' ? ok.iterations : 1
+  const trace = normalizeTrace(ok?.trace)
+
+  if (ok && isPendingApproval(ok.approval)) {
+    return { kind: 'awaiting', approval: ok.approval, iterations, trace }
+  }
   if (!ok || typeof ok.answer !== 'string') {
     throw new ChakError('Worker returned a body without an `answer` field.', response.status)
   }
-
-  return {
-    answer: ok.answer,
-    iterations: typeof ok.iterations === 'number' ? ok.iterations : 1,
-    trace: normalizeTrace(ok.trace),
-  }
+  return { kind: 'answered', answer: ok.answer, iterations, trace }
 }

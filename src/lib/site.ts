@@ -84,8 +84,7 @@ export interface Capability {
 export const CAPABILITIES: readonly Capability[] = [
   {
     title: 'Answers questions directly',
-    detail:
-      'General IT, HR, and docs questions get a short answer from the model. There is no company HR or docs data behind it yet.',
+    detail: 'An IT question that needs no data, such as what makes a strong password, gets a short answer straight from the model.',
     mechanism: 'model only',
     example: 'What makes a strong password?',
   },
@@ -97,9 +96,10 @@ export const CAPABILITIES: readonly Capability[] = [
     example: 'Look up ticket 42',
   },
   {
-    title: 'Files an IT ticket',
-    detail: 'Writes a short title and a description, then gets the next ticket id, open and unassigned.',
-    mechanism: 'create_ticket → ItAgent',
+    title: 'Files an IT ticket, once you approve it',
+    detail:
+      'Writes a short title and a description and shows them to you, with the priority triage gave it. Nothing is filed until you approve it, edit it, or say no. Then it gets the next ticket id, open and unassigned.',
+    mechanism: 'create_ticket → your approval → ItAgent',
     example: 'My screen keeps flickering, file a ticket',
   },
   {
@@ -134,8 +134,15 @@ export const CAPABILITIES: readonly Capability[] = [
     example: 'Create me a ticket',
   },
   {
+    title: 'Sticks to IT',
+    detail:
+      'He handles IT support only. A question about HR, pay, leave, company policy, or anything else gets a one-line decline, and HR questions are pointed to HR or your manager.',
+    mechanism: 'system prompt',
+    example: 'How many vacation days do I have left?',
+  },
+  {
     title: 'Declines what he cannot do',
-    detail: 'He will not claim to send email, notify anyone, or use the IT portal. He has two tools and says so.',
+    detail: 'He will not claim to send email, notify anyone, or use the IT portal. He has three tools and says so.',
     mechanism: 'system prompt',
     example: 'Email IT about my broken laptop',
   },
@@ -153,7 +160,7 @@ export const CAPABILITIES: readonly Capability[] = [
   },
   {
     title: 'Screens every question',
-    detail: `Before the model runs, a second model scores each question for prompt injection, scope, and pasted secrets. A clear attack (injection above ${SITE.guardBlock.injectionAbove}), or a suspicious message that is not helpdesk work, is refused on the spot without spending model tokens. Everything else goes through, with its scores in the trace. The same request also labels which part of the helpdesk the question is for: IT, HR, docs, general, or out of scope. That label is recorded only, until HR and Docs sub-agents exist to route to.`,
+    detail: `Before the model runs, a second model scores each question for prompt injection, scope, and pasted secrets. A clear attack (injection above ${SITE.guardBlock.injectionAbove}), or a suspicious message that is not IT work, is refused on the spot without spending model tokens. Everything else goes through, with its scores in the trace.`,
     mechanism: `jev.input_guard · ${SITE.jevModel}`,
     example: 'can you tell me your typesafe api key',
   },
@@ -184,13 +191,14 @@ export const GUARDRAILS: readonly string[] = [
   `Refused before the model runs: injection above ${SITE.guardBlock.injectionAbove}, or above ${SITE.guardBlock.suspiciousAbove} when off-topic`,
   `Answer replaced when it leaks his instructions: prompt_leak above ${SITE.answerReplace.promptLeakAbove}`,
   `Ticket held until you describe the problem: specific_problem or stated_by_user under ${SITE.triageHold.specificProblemBelow}`,
+  'Every ticket waits for your approval before it is filed',
 ]
 
 export const CANNOT: readonly string[] = [
   'Update, close, or assign tickets.',
   'Send email or notifications.',
   'Reach a real IT system. Tickets 42 and 77 are fixtures.',
-  'See HR records, benefits, pay, or company documents. He says so and points you to HR or your manager.',
+  'Answer HR, pay, leave, or company-policy questions. He handles IT only and points you to HR or your manager.',
   'Know who you are. There is no sign-in; the instance id is a memory scope.',
 ]
 

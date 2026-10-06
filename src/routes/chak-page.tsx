@@ -62,8 +62,8 @@ export function ChakPage() {
                 chatEnlarged && 'lg:hidden',
               )}
             >
-              I built Chak, an orange-and-white office cat, to route helpdesk questions to
-              sub-agents that hold real tools. Every tool call stays visible.
+              I built Chak, an orange-and-white office cat, to answer IT helpdesk questions with a
+              sub-agent that holds real tools. Every tool call stays visible.
             </p>
           </div>
 

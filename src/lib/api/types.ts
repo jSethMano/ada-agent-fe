@@ -3,15 +3,20 @@
  *
  * Source of truth: ada-agent/src/index.ts, `Chak.onRequest`, and the trace
  * shapes in ada-agent/src/trace.ts.
- * Endpoint: POST /agents/chak/{instance}   body: { question }
+ * Endpoint: POST /agents/chak/{instance}
+ *   body: { question }                          a new message
+ *   body: { decision: { id, action, args? } }   the visitor's answer to a waiting ticket
  * (The Worker still rewrites the pre-rename /agents/ada/ prefix for one release.)
  *
- * The router loop returns one of four shapes:
+ * The router loop returns one of these shapes:
  *   200  { answer, iterations, trace }        normal turn, or one the input guard
  *                                             blocked (iterations 0, fixed answer),
  *                                             or one whose answer was replaced
  *                                             (fixed answer, full trace)
- *   400  { error }                            missing question
+ *   200  { approval, iterations, trace }      the turn paused: a ticket is waiting
+ *                                             for the visitor's approval
+ *   400  { error }                            missing question, or a malformed decision
+ *   409  { error }                            a decision for a ticket no longer waiting
  *   500  { error, trace }                     loop exceeded MAX_ITERATIONS (5)
  *   502  { error, trace }                     a model or sub-agent call threw mid-turn
  *
@@ -20,10 +25,11 @@
  */
 
 /** One row of the trace, in the order it started: a tool call the router made,
- *  or a Jev check. `input_guard` runs before the loop. `triage_ticket` runs just
- *  before each create_ticket, so it sits directly above that row. `verify_answer`
+ *  a Jev check, or the visitor's decision on a ticket. `input_guard` runs before
+ *  the loop. `triage_ticket` runs just before each create_ticket, so it sits
+ *  above that row, with the visitor's decision between them. `verify_answer`
  *  runs after the loop on answered turns, so it is always the last row. */
-export type TraceEntry = ToolCallEntry | CheckEntry
+export type TraceEntry = ToolCallEntry | CheckEntry | ApprovalEntry
 
 /** One tool invocation as recorded by the router. `result` is the raw sub-agent
  *  envelope, which today is `{ result: ... }` from ItAgent.onRequest. */
@@ -87,15 +93,59 @@ export type CheckAnswer =
       flagged: boolean
     }
 
+/** The visitor's decision on a call that waited for approval. Rendered as
+ *  `human.approval`. `ms` is how long the call waited for the decision. */
+export interface ApprovalEntry {
+  kind: 'approval'
+  tool: string
+  /** `approved` or `cancelled`. A string so a new outcome still renders. */
+  decision: string
+  /** The arguments the model proposed. */
+  proposed: Record<string, unknown>
+  /** Fields the visitor changed before approving, with their new values. */
+  edits?: Record<string, string>
+  ms: number
+}
+
 export function isCheck(entry: TraceEntry): entry is CheckEntry {
   return entry.kind === 'check'
 }
 
-export interface AskResponse {
-  answer: string
-  iterations: number
-  trace: TraceEntry[]
+export function isApproval(entry: TraceEntry): entry is ApprovalEntry {
+  return entry.kind === 'approval'
 }
+
+export function isToolCall(entry: TraceEntry): entry is ToolCallEntry {
+  return entry.kind === undefined || entry.kind === 'tool'
+}
+
+/** A ticket the model wants to file, waiting for the visitor. Triage has already
+ *  run on it, so the card can show its priority and any linked ticket. */
+export interface PendingApproval {
+  id: string
+  tool: string
+  args: { title: string; description: string }
+  /** Null when triage did not run. */
+  priority: string | null
+  triage?: {
+    triaged: boolean
+    category?: string
+    security_incident?: boolean
+    duplicate_of?: string | null
+    related_to?: string | null
+  }
+}
+
+/** What the visitor sends back for a waiting ticket. `args` carries their edits. */
+export interface ApprovalDecision {
+  id: string
+  action: 'approve' | 'cancel'
+  args?: { title: string; description: string }
+}
+
+export type AskResponse =
+  | { kind: 'answered'; answer: string; iterations: number; trace: TraceEntry[] }
+  | { kind: 'awaiting'; approval: PendingApproval; iterations: number; trace: TraceEntry[] }
 
 export interface AskErrorBody {
   error: string
@@ -116,7 +166,8 @@ export class ChakError extends Error {
   }
 }
 
-export type TurnStatus = 'pending' | 'answered' | 'failed'
+/** `awaiting`: the turn paused on a ticket that needs the visitor's approval. */
+export type TurnStatus = 'pending' | 'awaiting' | 'answered' | 'failed'
 
 /** A rendered exchange. Held client-side; the Durable Object holds the
  *  authoritative history keyed by instance id. */
@@ -133,4 +184,14 @@ export interface Turn {
   /** HTTP status of a failed turn. A 500 and a 502 both carry a trace, and only
    *  the 500 means the loop ran out of passes. */
   errorStatus?: number
+  /** The ticket an `awaiting` turn is waiting on. */
+  approval?: PendingApproval
+  /** Set once the card can no longer be acted on, and why. `dropped`: the
+   *  visitor sent a new message instead of deciding. `stale`: the Worker no
+   *  longer had the ticket waiting (409). The turn stays `awaiting` so the card
+   *  can say what happened. */
+  approvalClosed?: 'dropped' | 'stale'
+  /** Why the last decision did not go through when trying again can work, such
+   *  as a rate limit or a dropped connection. */
+  approvalError?: string
 }
