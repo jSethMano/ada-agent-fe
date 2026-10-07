@@ -116,3 +116,10 @@ Chak is an orange-and-white office cat. Pronoun: **he**. The character is a tone
 - Llama 4 Scout sometimes writes a tool call into its reply as text (`[create_ticket(title="…", description="…")]`) instead of making it, typically at the second step of a chained request. The Worker parses that text (`ada-agent/src/text-tool-call.ts`, keyword or JSON form only) and runs it through the normal path, triage and hold included; the trace row carries `fromText: true` and renders "parsed from text". Asking the model again did not work (4 of 4 wrote it as text again), and Workers AI has no `tool_choice` for this model.
 - No streaming. The Worker returns the whole turn at once. The transcript is built so this can change without restructuring.
 - `SITE.githubUrl` in `src/lib/site.ts` is a placeholder — set it before sharing.
+
+## Claude Code skills and agent
+
+- `.claude/skills/worker-sync`: bring the page in line with a Worker change. `references/worker-map.md` lists every Worker symbol this repo mirrors and where; add a row whenever `src` copies a new value or shape from the Worker.
+- `.claude/skills/chat-console`: the turn lifecycle, trace rows, approval card, and saved conversations, with recipes for new row kinds, checks, and statuses.
+- `.claude/skills/chak-design`: the design locks above as a build guide and a review checklist with greps.
+- `.claude/agents/chak-fe-agent.md`: the agent an ada-agent session hands front-end work to. An identical copy lives in `~/.claude/agents/` so sessions in other repos can see it. Edit both, or they drift.
