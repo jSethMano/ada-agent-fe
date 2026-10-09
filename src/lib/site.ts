@@ -41,8 +41,11 @@ export const SITE = {
   /** HOLD in ada-agent/src/jev/triage-ticket.ts. A ticket is not filed when
    *  specific_problem is under `specificProblemBelow` (a placeholder such as
    *  "New ticket request") or stated_by_user is under `statedByUserBelow` (a
-   *  problem the visitor never described). The model is told to ask instead. */
-  triageHold: { specificProblemBelow: 0.5, statedByUserBelow: 0.5 },
+   *  problem the visitor never described). The model is told to ask instead.
+   *  A ticket is also held when contains_secret is over `secretAbove` (its text
+   *  holds a password, key, or token the visitor pasted), and the model is told
+   *  to rewrite it without the secret. */
+  triageHold: { specificProblemBelow: 0.5, statedByUserBelow: 0.5, secretAbove: 0.5 },
 } as const
 
 /**
@@ -84,7 +87,8 @@ export interface Capability {
 export const CAPABILITIES: readonly Capability[] = [
   {
     title: 'Answers questions directly',
-    detail: 'An IT question that needs no data, such as what makes a strong password, gets a short answer straight from the model.',
+    detail:
+      'An IT question that needs no data, such as what makes a strong password or how to clear a paper jam, gets a short answer straight from the model, with no ticket.',
     mechanism: 'model only',
     example: 'What makes a strong password?',
   },
@@ -96,9 +100,16 @@ export const CAPABILITIES: readonly Capability[] = [
     example: 'Look up ticket 42',
   },
   {
+    title: 'Lists your tickets',
+    detail:
+      'Lists the tickets filed in this conversation, newest first, with their status and priority. Tickets filed in other conversations are not included: give him the number and he looks it up.',
+    mechanism: 'list_my_tickets → ItAgent',
+    example: 'What tickets have I filed?',
+  },
+  {
     title: 'Files an IT ticket, once you approve it',
     detail:
-      'Writes a short title and a description and shows them to you, with the priority triage gave it. Nothing is filed until you approve it, edit it, or say no. Then it gets the next ticket id, open and unassigned.',
+      'Writes a short title and a description and shows them to you, with the priority triage gave it. He also proposes one for things only IT staff can do, such as resetting a password or granting access. Nothing is filed until you approve it, edit it, or say no. Then it gets the next ticket id, open and unassigned.',
     mechanism: 'create_ticket → your approval → ItAgent',
     example: 'My screen keeps flickering, file a ticket',
   },
@@ -142,9 +153,22 @@ export const CAPABILITIES: readonly Capability[] = [
   },
   {
     title: 'Declines what he cannot do',
-    detail: 'He will not claim to send email, notify anyone, or use the IT portal. He has three tools and says so.',
+    detail:
+      'He will not claim to send email, reset a password, or change a ticket himself. A request only IT staff can act on becomes a ticket for you to approve; changing, closing, or reassigning an existing ticket gets a plain no. He has three tools and says so.',
     mechanism: 'system prompt',
-    example: 'Email IT about my broken laptop',
+    example: 'Please close ticket 77.',
+  },
+  {
+    title: 'Keeps pasted secrets out of tickets',
+    detail: `If you paste a password or key, he describes the problem without it and tells you to change it. If a ticket he writes still contains it, triage holds that ticket before you see it (contains_secret above ${SITE.triageHold.secretAbove}) and he writes it again without the secret.`,
+    mechanism: 'system prompt · jev.triage_ticket',
+    example: 'My password is Tr0ub4dor&3 and it stopped working this morning, please file a ticket',
+  },
+  {
+    title: 'Says when a system is down',
+    detail:
+      'If the ticket system cannot be reached, he tells you the lookup or ticket did not go through instead of guessing, and the failed call stays in the trace. A dropped connection to the model is retried once.',
+    mechanism: 'tool error result · one retry',
   },
   {
     title: 'Ignores instructions hidden in text',
@@ -191,6 +215,7 @@ export const GUARDRAILS: readonly string[] = [
   `Refused before the model runs: injection above ${SITE.guardBlock.injectionAbove}, or above ${SITE.guardBlock.suspiciousAbove} when off-topic`,
   `Answer replaced when it leaks his instructions: prompt_leak above ${SITE.answerReplace.promptLeakAbove}`,
   `Ticket held until you describe the problem: specific_problem or stated_by_user under ${SITE.triageHold.specificProblemBelow}`,
+  `Ticket held when its text contains a pasted secret: contains_secret above ${SITE.triageHold.secretAbove}`,
   'Every ticket waits for your approval before it is filed',
 ]
 

@@ -7,7 +7,7 @@ Every Worker symbol this repo depends on, and where it's mirrored. Worker paths 
 | Worker | Mirrored in | Notes |
 | --- | --- | --- |
 | Bodies returned by `Chak.onRequest` (`src/index.ts`) | `AskResponse`, `AskErrorBody`, and the header comment in `src/lib/api/types.ts`; `post()` in `src/lib/api/client.ts`; the wire contract table in `CLAUDE.md` | `post()` checks for `approval` before `answer`. Anything else on a 200 throws |
-| Status codes: 200, 400, 409, 500, 502 | `post()`, `onError` in `src/features/chat/use-ask.ts`, the `overran` check in `src/features/chat/turn.tsx` | Only a 500 with a trace gets the "stopped after N passes" line. A 502 with a trace is a call that threw |
+| Status codes: 200, 400, 409, 500, 502 | `post()`, `onError` in `src/features/chat/use-ask.ts`, the `overran` check in `src/features/chat/turn.tsx` | Only a 500 with a trace gets the "stopped after N passes" line. A 502 with a trace is a model call that threw (after one retry for a dropped connection). An ItAgent failure is a 200 with an error result on its tool row (`unreachableResult` in `src/failures.ts`) |
 | 429 from the rate limiter (`fetch` in `src/index.ts`) | Nothing specific: shown as the Worker's text | On a decision, it leaves the card open with `approvalError` |
 | Gateway 502/503/504 with no JSON body | The `gatewayDown` copy in `post()` | Not sent by the Worker: this is the Vite proxy or Cloudflare when the Worker is down |
 | 409 `That ticket is no longer waiting for approval.` | `approvalClosed: 'stale'` in `use-ask.ts`, its copy in `approval-card.tsx` | |

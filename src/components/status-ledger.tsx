@@ -19,6 +19,9 @@ const GROUPS: Group[] = [
       "Human in the loop: every ticket waits for you to approve, edit, or decline it, and your decision is a row in the trace",
       "IT sub-agent reachable only through the router, never directly from the internet",
       "Scoped to IT support; HR, policy, and general questions get a one-line decline",
+      "A ticket holding a pasted password or key is held by Jev and rewritten without it",
+      "A ticket system that can't be reached is reported in the reply, not a failed turn",
+      "End-to-end agent eval: 50 labeled cases, run three times each and graded from the trace",
       "Rate limited to 10 requests per minute per IP",
     ],
   },
@@ -36,7 +39,7 @@ const GROUPS: Group[] = [
       "Tickets 42 and 77 are seeded fixtures, not records from a real system.",
       "No auth. The instance id is a memory scope, not a credential.",
       "The Worker sends no CORS headers. Dev proxies through Vite, production through a service binding.",
-      "Only the Jev checks have evals. Tool selection is still verified by hand.",
+      "The eval cases were written for this demo, not drawn from real traffic.",
     ],
   },
 ];

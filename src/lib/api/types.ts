@@ -18,7 +18,11 @@
  *   400  { error }                            missing question, or a malformed decision
  *   409  { error }                            a decision for a ticket no longer waiting
  *   500  { error, trace }                     loop exceeded MAX_ITERATIONS (5)
- *   502  { error, trace }                     a model or sub-agent call threw mid-turn
+ *   502  { error, trace }                     the model call threw mid-turn (a dropped
+ *                                             connection is retried once first)
+ *
+ * A ticket system that can't be reached is not a failure: the turn answers
+ * (200), and the call's tool row carries an `error` in its result.
  *
  * Both failures still carry a trace, which is worth rendering: a turn that ran
  * out of iterations is the most interesting thing an agent can show you.
