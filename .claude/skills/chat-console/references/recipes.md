@@ -5,14 +5,14 @@
 | Outcome | Patch (`use-ask.ts`) | Renders (`turn.tsx`) |
 | --- | --- | --- |
 | Submit | Appends `{ status: 'pending' }`, and closes any open card as `approvalClosed: 'dropped'` | Thinking sprite and "routing" |
-| 200 `{ answer }` | `status: 'answered'`, `answer`, `iterations`, `trace`, `elapsedMs`, `approval: undefined` | Trace, then `Answer` |
-| 200 `{ approval }` | `status: 'awaiting'`, `approval`, `iterations`, `trace`, `elapsedMs`, `approvalClosed: undefined` | Trace with `approval="waiting"`, then `ApprovalCard` (keyed by `approval.id`) |
+| 200 `{ answer }` | `status: 'answered'`, `answer`, `iterations`, `trace`, `elapsedMs`, `approval: undefined`, plus `notice` when sent (never cleared here) | Trace, then `Answer`, then `Notice` if the turn has one |
+| 200 `{ approval }` | `status: 'awaiting'`, `approval`, `iterations`, `trace`, `elapsedMs`, `approvalClosed: undefined`, plus `notice` from `approval.notice` when sent | Trace with `approval="waiting"`, then `ApprovalCard` (keyed by `approval.id`), which shows `approval.notice` under its heading |
 | Decision → 200 | Same as the matching row above, on the same turn, with `elapsedMs` added to the earlier roundtrip | |
 | Decision → 409 | `approvalClosed: 'stale'` | Card's closed state: "no longer waiting" |
 | Decision → any failure with no trace (429, offline, 400) | `approvalError: message`, status unchanged | Card stays open with the reason |
 | Decision → failure with a trace (500, 502 from the resumed loop) | Same as a failed question | |
 | Question → failure | `status: 'failed'`, `error`, `trace` (empty if none came back), `errorStatus`, `elapsedMs`, `approval: undefined` | Trace if it has rows (with `failed`), then the error box and "Retry this question" |
-| Retry | Back to `pending`, clearing `error`, `errorStatus`, `trace`, `elapsedMs` | |
+| Retry | Back to `pending`, clearing `error`, `errorStatus`, `trace`, `elapsedMs`, `notice` | |
 
 ## A new trace row kind
 

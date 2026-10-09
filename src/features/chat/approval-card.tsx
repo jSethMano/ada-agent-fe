@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
 import type { ApprovalDecision, PendingApproval, Turn } from '@/lib/api/types'
+import { Notice } from './notice'
 
 /** ItAgent's limits, also enforced by the Worker on an edited ticket. */
 const TITLE_MAX = 200
@@ -106,6 +107,8 @@ export function ApprovalCard({ turn, deciding, busy, onDecide }: ApprovalCardPro
         </h3>
         <code className="font-mono text-[11px] text-ink-3">waiting for you · {approval.tool}</code>
       </div>
+
+      {approval.notice && <Notice text={approval.notice} />}
 
       {editing ? (
         <div className="mt-3 space-y-3">

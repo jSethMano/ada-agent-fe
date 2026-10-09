@@ -160,7 +160,7 @@ export const CAPABILITIES: readonly Capability[] = [
   },
   {
     title: 'Keeps pasted secrets out of tickets',
-    detail: `If you paste a password or key, he describes the problem without it and tells you to change it. If a ticket he writes still contains it, triage holds that ticket before you see it (contains_secret above ${SITE.triageHold.secretAbove}) and he writes it again without the secret.`,
+    detail: `If you paste a password or key, he describes the problem without it. If a ticket he writes still contains it, triage holds that ticket before you see it (contains_secret above ${SITE.triageHold.secretAbove}) and he writes it again without the secret. A fixed notice, not the model, tells you to change it.`,
     mechanism: 'system prompt · jev.triage_ticket',
     example: 'My password is Tr0ub4dor&3 and it stopped working this morning, please file a ticket',
   },

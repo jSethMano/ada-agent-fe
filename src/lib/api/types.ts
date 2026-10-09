@@ -138,6 +138,9 @@ export interface PendingApproval {
     duplicate_of?: string | null
     related_to?: string | null
   }
+  /** Fixed advice from the Worker, set when the visitor pasted a password or key
+   *  this turn (`SECRET_NOTICE` in ada-agent/src/secret-notice.ts). Display only. */
+  notice?: string
 }
 
 /** What the visitor sends back for a waiting ticket. `args` carries their edits. */
@@ -148,7 +151,7 @@ export interface ApprovalDecision {
 }
 
 export type AskResponse =
-  | { kind: 'answered'; answer: string; iterations: number; trace: TraceEntry[] }
+  | { kind: 'answered'; answer: string; iterations: number; trace: TraceEntry[]; notice?: string }
   | { kind: 'awaiting'; approval: PendingApproval; iterations: number; trace: TraceEntry[] }
 
 export interface AskErrorBody {
@@ -190,6 +193,9 @@ export interface Turn {
   errorStatus?: number
   /** The ticket an `awaiting` turn is waiting on. */
   approval?: PendingApproval
+  /** The Worker's notice for this turn, from the approval card or the answer.
+   *  Kept after a decision, since the answer that follows does not repeat it. */
+  notice?: string
   /** Set once the card can no longer be acted on, and why. `dropped`: the
    *  visitor sent a new message instead of deciding. `stale`: the Worker no
    *  longer had the ticket waiting (409). The turn stays `awaiting` so the card

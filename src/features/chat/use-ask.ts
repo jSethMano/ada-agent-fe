@@ -58,10 +58,14 @@ export function useAsk(
     },
     onSuccess: ({ response, elapsedMs }, request) => {
       const shared = { iterations: response.iterations, trace: response.trace, elapsedMs, approvalError: undefined }
+      // A notice is only ever added, never cleared here: the answer after a
+      // decision does not repeat the card's notice, and the turn keeps it.
       if (response.kind === 'awaiting') {
-        patchTurn(request.turnId, { ...shared, status: 'awaiting', approval: response.approval, approvalClosed: undefined })
+        const notice = response.approval.notice ? { notice: response.approval.notice } : {}
+        patchTurn(request.turnId, { ...shared, ...notice, status: 'awaiting', approval: response.approval, approvalClosed: undefined })
       } else {
-        patchTurn(request.turnId, { ...shared, status: 'answered', answer: response.answer, approval: undefined })
+        const notice = response.notice ? { notice: response.notice } : {}
+        patchTurn(request.turnId, { ...shared, ...notice, status: 'answered', answer: response.answer, approval: undefined })
       }
     },
     onError: (error: unknown, request) => {
@@ -138,6 +142,7 @@ export function useAsk(
         errorStatus: undefined,
         trace: undefined,
         elapsedMs: undefined,
+        notice: undefined,
       })
       mutation.mutate({ question: target.question, turnId })
     },

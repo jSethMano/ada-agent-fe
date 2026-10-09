@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { SITE } from '@/lib/site'
 import { Answer } from './answer'
 import { ApprovalCard } from './approval-card'
+import { Notice } from './notice'
 import { Trace } from './trace'
 import type { ApprovalDecision, Turn } from '@/lib/api/types'
 
@@ -93,6 +94,7 @@ export function TurnView({ turn, onRetry, onDecide, deciding, busy }: TurnViewPr
                 mono. The typography carries the human/machine boundary so the
                 trace needs no coloured container to read as a different thing. */}
             <Answer text={turn.answer ?? ''} />
+            {turn.notice && <Notice text={turn.notice} />}
           </>
         )}
 

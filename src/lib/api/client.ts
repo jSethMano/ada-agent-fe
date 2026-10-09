@@ -131,10 +131,22 @@ async function post(
   const trace = normalizeTrace(ok?.trace)
 
   if (ok && isPendingApproval(ok.approval)) {
-    return { kind: 'awaiting', approval: ok.approval, iterations, trace }
+    const { notice, ...approval } = ok.approval
+    return {
+      kind: 'awaiting',
+      approval: typeof notice === 'string' ? { ...approval, notice } : approval,
+      iterations,
+      trace,
+    }
   }
   if (!ok || typeof ok.answer !== 'string') {
     throw new ChakError('Worker returned a body without an `answer` field.', response.status)
   }
-  return { kind: 'answered', answer: ok.answer, iterations, trace }
+  return {
+    kind: 'answered',
+    answer: ok.answer,
+    iterations,
+    trace,
+    ...(typeof ok.notice === 'string' ? { notice: ok.notice } : {}),
+  }
 }

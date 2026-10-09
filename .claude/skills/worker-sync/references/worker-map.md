@@ -22,6 +22,7 @@ Every Worker symbol this repo depends on, and where it's mirrored. Worker paths 
 | `ApprovalEntry` | `ApprovalEntry`, `isApproval()`, `ApprovalRow` | `decision` is a string here |
 | `approvalView()` in `src/approval.ts` (the `approval` body) | `PendingApproval`, `isPendingApproval()`, `TriageLine` in `src/features/chat/approval-card.tsx` | `priority: null` means triage didn't run. The card prints "untriaged" |
 | `Decision` and `parseDecision()` in `src/approval.ts` | `ApprovalDecision` in `types.ts`, `decide()` in `client.ts` | |
+| `notice` on the approval and answer bodies (`SECRET_NOTICE`, `sharedSecret()` in `src/secret-notice.ts`; set in `approvalView()` and `Chak.onRequest`) | `PendingApproval.notice`, the `notice` on `AskResponse`, `Turn.notice`, `post()` in `client.ts`, `onSuccess` in `use-ask.ts`, `Notice` in `src/features/chat/notice.tsx` | Optional and rendered verbatim. Kept on the turn after a decision. Non-string values are dropped in `post()` |
 | `TICKET_LIMITS` in `src/approval.ts` | `TITLE_MAX` and `DESCRIPTION_MAX` in `approval-card.tsx` | Literal copies |
 
 ## Facts printed on the page
