@@ -48,6 +48,12 @@ No test compares these with the Worker. The Worker's `test/skills.spec.ts` check
 | What the system prompt allows and refuses (`src/system-prompt.ts`) | `CAPABILITIES`, `CANNOT`, the "shipped" list in `status-ledger.tsx` | `CAPABILITIES` lists live behavior only. Planned work goes under "next" in the ledger |
 | Turn order: guard → loop → triage → approval → call → verify (`Chak.onRequest`) | `LOOP_STEPS` in `architecture.tsx`, the doc comments on `TraceEntry` and `Trace`, the trace paragraph in `CLAUDE.md` | |
 
+## Eval results
+
+| Worker | Mirrored in | Notes |
+| --- | --- | --- |
+| `PageData` in `evals/page.ts`, written by `npm run eval:export` from the runs in `evals/page.config.ts` | `src/data/evals.json` (generated), the `EvalData` types in `src/lib/evals.ts`, `EvalResults` in `src/components/eval-results.tsx` | Regenerate after each eval run that should appear. A changed `PageData` shape needs the types updated. `FEATURED_COPY` must still describe the exported traces |
+
 ## Compatibility shims
 
 | Worker | Front end | Remove when |

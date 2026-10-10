@@ -68,10 +68,11 @@ Client-side elapsed time is measured with `performance.now()` and attached to `C
 src/
   routes/chak-page.tsx          the single page
   features/chat/                console, transcript, trace, composer, session + ask hooks
-  components/                   masthead, capabilities, builder's note, architecture diagram, status, footer, chak-sprite
+  components/                   masthead, capabilities, builder's note, architecture diagram, eval results, status, footer, chak-sprite
   components/ui/                shadcn primitives (button, textarea), re-tokenized
   lib/api/{client,types}.ts     typed client + wire types (source of truth for the contract)
   lib/site.ts                   facts printed on the page, read off the Worker source (not retyped)
+  lib/evals.ts, data/evals.json the "How he's measured" section: eval runs and featured traces, generated in ada-agent
 ```
 
 `@/*` resolves to `./src/*` (tsconfig + Vite alias).
@@ -106,6 +107,10 @@ Chak is an orange-and-white office cat. Pronoun: **he**. The character is a tone
 - **Character lives in the chrome, never in the record.** Trace rows, JSON, tool names, paths, and timings stay literal; the trace header still says `router loop`.
 - **No cat-speak anywhere** — not in UI copy, not in answers (the Worker's system prompt forbids cat sounds, puns, and roleplay). Error copy states the real cause; the Worker's own error text is shown verbatim, never rewritten.
 - **Sprite rules** (`src/components/chak-sprite.tsx`, frames in `chak-sprite-frames.ts`): 16×16 grid, rendered only at multiples of 16px (the `size` prop is a literal union for this reason), always `aria-hidden` because his name is always printed beside him. The fur colours are illustration-only — bright fur is 2.7:1 and must never carry text or a control. `public/favicon.svg` is generated from the idle frame; regenerate it if the frames change.
+
+### Eval results on the page
+
+`src/data/evals.json` is generated, never hand-edited: from ada-agent, run `npm run eval:export -- --to ../ada-agent-fe/src/data/evals.json` after a new eval run is added to `evals/page.config.ts`. The export refuses to write unless every run it includes was graded with the same answer key, so the table always compares like with like. `EvalResults` (`src/components/eval-results.tsx`) renders the table and the featured before/after cases with the console's own `Trace`, `Answer`, and `Notice`. Featured-case copy lives in `FEATURED_COPY` (`src/lib/evals.ts`), and every sentence there must match the exported traces: re-read it after each export. Below `sm`, only the first and last runs show in the table, so it fits 320px.
 
 ### Facts on the page
 

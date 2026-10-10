@@ -329,8 +329,9 @@ interface TraceProps {
   /** The turn ended in an error (out of passes, or a call that threw). */
   failed?: boolean
   /** The turn stopped at a ticket: still waiting for the visitor's approval,
-   *  or closed without one (they sent a new message instead). */
-  approval?: 'waiting' | 'closed'
+   *  or closed without one (they sent a new message instead). `paused` is a
+   *  recorded eval run that stopped there, where nobody is waiting. */
+  approval?: 'waiting' | 'closed' | 'paused'
 }
 
 /**
@@ -408,6 +409,7 @@ export function Trace({ trace, iterations, elapsedMs, failed, approval }: TraceP
           <span className="whitespace-nowrap font-medium text-ink">waiting for your approval</span>
         )}
         {approval === 'closed' && <span className="whitespace-nowrap text-ink-3">ticket not filed</span>}
+        {approval === 'paused' && <span className="whitespace-nowrap text-ink-3">paused for approval</span>}
         {replaced && <span className="whitespace-nowrap text-danger">answer replaced</span>}
         {elapsedMs !== undefined && <Stat value={formatDuration(elapsedMs)} label="roundtrip" />}
       </header>

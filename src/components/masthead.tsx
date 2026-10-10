@@ -15,7 +15,7 @@ export function Masthead() {
         </a>
 
         {/* Phones get the two links that matter to a first-time visitor;
-            Architecture and Status join from sm, where all four fit. */}
+            Architecture, Evals, and Status join from sm, where all five fit. */}
         <nav aria-label="Sections" className="flex items-center gap-5 sm:gap-7">
           <a
             href="#capabilities"
@@ -28,6 +28,12 @@ export function Masthead() {
             className="hidden text-[13.5px] text-ink-2 underline-offset-4 transition-colors hover:text-ink hover:underline sm:inline pointer-coarse:-my-3 pointer-coarse:py-3"
           >
             Architecture
+          </a>
+          <a
+            href="#evals"
+            className="hidden text-[13.5px] text-ink-2 underline-offset-4 transition-colors hover:text-ink hover:underline sm:inline pointer-coarse:-my-3 pointer-coarse:py-3"
+          >
+            Evals
           </a>
           <a
             href="#status"

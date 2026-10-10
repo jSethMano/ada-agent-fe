@@ -4,6 +4,7 @@ import { BuildersNote } from '@/components/builders-note'
 import { Capabilities } from '@/components/capabilities'
 import { ChakSprite } from '@/components/chak-sprite'
 import { EnlargeChatButton } from '@/components/enlarge-chat-button'
+import { EvalResults } from '@/components/eval-results'
 import { Masthead } from '@/components/masthead'
 import { SiteFooter } from '@/components/site-footer'
 import { StatusLedger } from '@/components/status-ledger'
@@ -80,6 +81,10 @@ export function ChakPage() {
 
         <div id="architecture" className="scroll-mt-16">
           <Architecture />
+        </div>
+
+        <div id="evals" className="scroll-mt-16">
+          <EvalResults />
         </div>
 
         <div id="status" className="scroll-mt-16">
