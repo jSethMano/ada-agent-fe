@@ -111,7 +111,7 @@ One person can hold more than one role. An agent is also an employee when their 
 - **TK.5 History.** Every change is recorded with who made it, when, and the old and new values: status, assignee,
   queue, category, priority. Changes Chak makes for an employee read "Chak, for {employee}".
 - **TK.6** Existing tickets, and tickets filed before this release, still open and look up correctly, as triage
-  required before them (F3.6 in `jev-requirements.md`).
+  required before them (F3.6 in `ada-agent/docs/jev-requirements.md`).
 
 ### 4.4 Queues and assignment
 
@@ -130,7 +130,7 @@ One person can hold more than one role. An agent is also an employee when their 
 - **TR.1** An agent can change a ticket's category or priority.
 - **TR.2** Every override records Jev's original answer and its confidence, the new value, who changed it, and when.
   These records are the real-traffic data needed to tune the Jev thresholds (requirements §6 in
-  `jev-requirements.md`).
+  `ada-agent/docs/jev-requirements.md`).
 - **TR.3** After an override, the ticket uses the human value everywhere: queue, response target, and display. Jev's
   original value stays visible in the history.
 - **TR.4** Jev triage still runs on every new ticket, as it does today, including the hold rule.

@@ -40,6 +40,8 @@ const GROUPS: Group[] = [
       "No auth. The instance id is a memory scope, not a credential.",
       "The Worker sends no CORS headers. Dev proxies through Vite, production through a service binding.",
       "The eval cases were written for this demo, not drawn from real traffic.",
+      "Asked to email IT, he proposes a ticket in only some runs (1 of 3 in the latest eval); otherwise he declines and offers one.",
+      "He still sometimes writes a lookup for a guessed ticket number. The router refuses it before it reaches the ticket store.",
     ],
   },
 ];

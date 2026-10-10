@@ -158,6 +158,11 @@ function SideView({ kind, side }: { kind: 'before' | 'after'; side: EvalSide }) 
         {kind} · {side.label} · run {side.rep} ·{' '}
         <span className={passed ? 'text-ink' : 'text-danger'}>{STATUS_WORD[side.status] ?? side.status}</span>
       </p>
+      {/* The run shown is one of several, so say how the case did across all of them. */}
+      <p className="font-mono text-[11px] text-ink-3">
+        {side.caseRuns.passed} of {side.caseRuns.total} {side.caseRuns.total === 1 ? 'run' : 'runs'} passed in{' '}
+        {side.label}
+      </p>
       {side.steps.map((step, index) => (
         <StepView key={index} step={step} />
       ))}

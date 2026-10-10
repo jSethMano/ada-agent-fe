@@ -154,7 +154,7 @@ export const CAPABILITIES: readonly Capability[] = [
   {
     title: 'Declines what he cannot do',
     detail:
-      'He will not claim to send email, reset a password, or change a ticket himself. A request only IT staff can act on becomes a ticket for you to approve; changing, closing, or reassigning an existing ticket gets a plain no. He has three tools and says so.',
+      'He will not claim to send email, reset a password, or change a ticket himself. A request only IT staff can act on, such as a password reset or access, becomes a ticket for you to approve; changing, closing, or reassigning an existing ticket gets a plain no. He has three tools and says so.',
     mechanism: 'system prompt',
     example: 'Please close ticket 77.',
   },
