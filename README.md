@@ -4,6 +4,8 @@ Front end for **Chak**, an internal-helpdesk agent running on Cloudflare Workers
 orange-and-white office cat. A single scrolled page: a live chat console with a visible tool-call
 trace, a list of everything he can do, plus documentation of the architecture behind it.
 
+**Live: [chak.joshuaseth11.workers.dev](https://chak.joshuaseth11.workers.dev/).** The Worker and its end-to-end eval live in [ada-agent](https://github.com/jSethMano/ada-agent).
+
 The point of the page is the trace. Chak is a router agent that decides whether a question needs
 data, dispatches tool calls to sub-agents in separate Durable Objects, folds the results back into
 the message list, and runs the model again. Every one of those calls is rendered, with the real
