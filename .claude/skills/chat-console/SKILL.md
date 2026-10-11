@@ -73,7 +73,7 @@ Then look at it. Type-checking proves the code compiles, not that the turn rende
 
 - **Against a Worker:** `npm run dev`, with the Worker on port 8787. The suggested prompts and the `CAPABILITIES` examples cover lookup, approval, a hold, a guard block, and a chained turn.
 - **Without one:** turns render from `localStorage`. Put a conversation holding the shape you need under `chak.conversations.v1` (`[{ instance, turns: [Turn], createdAt, updatedAt }]`) and reload. That's the quickest way to see a 500, a 502, a held ticket, or a saved turn from before a field existed.
-- Check a phone width (320px) and an enlarged console (`lg`, after clicking the sprite) for any change to a row or the card.
+- Check a phone width (320px) and `lg` with a conversation open for any change to a row or the card.
 
 ## Keeping this skill in sync
 

@@ -1,5 +1,7 @@
 import { ArrowClockwiseIcon } from '@phosphor-icons/react'
 import { ChakSprite } from '@/components/chak-sprite'
+import type { Pose } from '@/components/chak-sprite-frames'
+import { Bubble, BubbleContent, BubbleTail } from '@/components/ui/bubble'
 import { Button } from '@/components/ui/button'
 import { SITE } from '@/lib/site'
 import { Answer } from './answer'
@@ -8,24 +10,41 @@ import { Notice } from './notice'
 import { Trace } from './trace'
 import type { ApprovalDecision, Turn } from '@/lib/api/types'
 
-/** The speaker label sits in a fixed mono gutter so the thread reads as a
- *  transcript rather than a stack of chat bubbles. Alternating bubbles are the
- *  single clearest "chatbot playground" signal, and this is a tool. */
-function Gutter({ speaker }: { speaker: 'you' | 'chak' }) {
+/** The visitor's message, on the right in the ink bubble. Also used by the
+ *  eval replays, so a recorded run reads like the live thread. */
+export function VisitorMessage({ children }: { children: React.ReactNode }) {
   return (
-    <span className="pt-0.5 font-mono text-[11px] tracking-wide text-ink-3 select-none">
-      {speaker}
-    </span>
+    <Bubble align="end" className="max-w-[min(85%,68ch)]">
+      <BubbleTail />
+      <BubbleContent className="px-3.5 py-2 text-[15px] leading-relaxed">
+        <span className="sr-only">You: </span>
+        {children}
+      </BubbleContent>
+    </Bubble>
   )
 }
 
-function Row({ speaker, children }: { speaker: 'you' | 'chak'; children: React.ReactNode }) {
+interface ChakReplyProps {
+  /** In flight: the sprite loops its thinking frames. */
+  thinking?: boolean
+  pose?: Pose
+  /** A machine word beside his name while there is nothing else to show. */
+  note?: string
+  children?: React.ReactNode
+}
+
+/** Chak's half of a turn, on the left: his sprite with his name beside it, then
+ *  the record (trace, approval card) at full width, because traces need the
+ *  room, then his answer in its bubble. Only prose goes in a bubble. */
+export function ChakReply({ thinking, pose, note, children }: ChakReplyProps) {
   return (
-    // Below sm the label sits above the message: a side gutter there costs a
-    // quarter of the width that traces need.
-    <div className="grid grid-cols-1 gap-y-1.5 px-4 py-4 sm:grid-cols-[3.5rem_1fr] sm:gap-x-4 sm:gap-y-0 sm:px-6">
-      <Gutter speaker={speaker} />
-      <div className="min-w-0">{children}</div>
+    <div className="min-w-0">
+      <p className="flex items-center gap-2 font-mono text-[11px] tracking-wide text-ink-3 select-none">
+        <ChakSprite size={16} thinking={thinking} pose={pose} />
+        chak
+        {note && <span>· {note}</span>}
+      </p>
+      {children}
     </div>
   )
 }
@@ -48,18 +67,20 @@ export function TurnView({ turn, onRetry, onDecide, deciding, busy }: TurnViewPr
   const overran = failedWithTrace && turn.errorStatus !== 502
 
   return (
-    <article className="scroll-mb-28 border-t border-rule first:border-t-0">
-      <Row speaker="you">
-        <p className="max-w-[68ch] text-[15px] leading-relaxed text-ink">{turn.question}</p>
-      </Row>
+    // Turns are set apart by space, not rules: the bubbles already mark where
+    // each one starts.
+    <article className="flex scroll-mb-36 flex-col gap-3 px-4 py-4 sm:px-6">
+      <VisitorMessage>{turn.question}</VisitorMessage>
 
-      <Row speaker="chak">
+      <ChakReply
+        thinking={turn.status === 'pending'}
+        pose={turn.status === 'failed' ? 'ears-back' : undefined}
+        note={turn.status === 'pending' ? 'routing' : undefined}
+      >
         {turn.status === 'pending' && (
-          <div role="status" className="flex items-center gap-2">
-            <ChakSprite thinking size={16} />
-            <span className="font-mono text-[11.5px] text-ink-3">routing</span>
-            <span className="sr-only">Chak is working on your question.</span>
-          </div>
+          <span role="status" className="sr-only">
+            Chak is working on your question.
+          </span>
         )}
 
         {/* The loop paused on a ticket. The trace so far stays in place, and the
@@ -90,9 +111,9 @@ export function TurnView({ turn, onRetry, onDecide, deciding, busy }: TurnViewPr
               iterations={turn.iterations}
               elapsedMs={turn.elapsedMs}
             />
-            {/* Chak's prose is set in Geist Pixel; everything the machine emits is
-                mono. The typography carries the human/machine boundary so the
-                trace needs no coloured container to read as a different thing. */}
+            {/* Chak's prose is in his bubble; everything the machine emits is
+                mono and stays outside it, so the bubble only ever holds what he
+                said. */}
             <Answer text={turn.answer ?? ''} />
             {turn.notice && <Notice text={turn.notice} />}
           </>
@@ -108,19 +129,17 @@ export function TurnView({ turn, onRetry, onDecide, deciding, busy }: TurnViewPr
               />
             )}
             <div className="mt-3 border-l-2 border-danger bg-danger-wash px-3 py-2.5">
-              <div className="flex items-start gap-2">
-                <ChakSprite pose="ears-back" size={16} className="mt-0.5" />
-                <div className="min-w-0 text-[13.5px] leading-relaxed text-danger">
-                  {/* The plain-English line is ours; the Worker's own error stays
-                      underneath, verbatim, because the record is never rewritten. */}
-                  {overran && (
-                    <p>
-                      Chak stopped after {SITE.maxIterations} passes without settling on an answer.
-                      Everything he tried is above.
-                    </p>
-                  )}
-                  <p className={overran ? 'mt-1 font-mono text-[11.5px]' : undefined}>{turn.error}</p>
-                </div>
+              {/* His ears go back in the sprite above, so the box needs no sprite of its own. */}
+              <div className="text-[13.5px] leading-relaxed text-danger">
+                {/* The plain-English line is ours; the Worker's own error stays
+                    underneath, verbatim, because the record is never rewritten. */}
+                {overran && (
+                  <p>
+                    Chak stopped after {SITE.maxIterations} passes without settling on an answer.
+                    Everything he tried is above.
+                  </p>
+                )}
+                <p className={overran ? 'mt-1 font-mono text-[11.5px]' : undefined}>{turn.error}</p>
               </div>
               <Button
                 variant="outline"
@@ -134,7 +153,7 @@ export function TurnView({ turn, onRetry, onDecide, deciding, busy }: TurnViewPr
             </div>
           </>
         )}
-      </Row>
+      </ChakReply>
     </article>
   )
 }

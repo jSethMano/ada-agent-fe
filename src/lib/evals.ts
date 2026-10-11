@@ -7,7 +7,7 @@
  * hand. The types mirror `PageData` in ada-agent/evals/page.ts.
  */
 import raw from '@/data/evals.json'
-import type { TraceEntry } from '@/lib/api/types'
+import type { PendingApproval, TraceEntry } from '@/lib/api/types'
 
 export interface EvalTally {
   passed: number
@@ -43,7 +43,8 @@ export interface EvalStep {
   approval?: {
     args: { title: string; description: string }
     priority: string | null
-    triage: unknown
+    /** The Worker's triage, as sent on the approval (ada-agent types it unknown). */
+    triage?: PendingApproval['triage']
     notice?: string
   }
   notice?: string

@@ -2,21 +2,30 @@ import { useEffect, useRef } from 'react'
 import { ArrowUpIcon } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
+import { cn } from '@/lib/utils'
 import { COMPOSER_ID, useComposerDraft } from './composer-draft'
 
 interface ComposerProps {
   onSubmit: (question: string) => void
   disabled: boolean
+  /** A conversation is open, so the composer sits under the thread. Before the
+   *  first message it sits in the middle of the hero, under the greeting. */
+  docked: boolean
 }
 
-export function Composer({ onSubmit, disabled }: ComposerProps) {
+/**
+ * One box, like a ChatGPT prompt: the field on top, a row under it with the
+ * keyboard hint and the send button. The box carries the focus ring (accent,
+ * one of marmalade's four jobs) because the field inside it has no border.
+ */
+export function Composer({ onSubmit, disabled, docked }: ComposerProps) {
   const [value, setValue] = useComposerDraft()
   const ref = useRef<HTMLTextAreaElement>(null)
 
-  // Focus on load so a visitor can type immediately, but only where the console
-  // already shares the first viewport. Below lg the console sits under the hero,
-  // so autofocus would scroll past the headline and raise the software keyboard
-  // before the visitor has read anything. preventScroll keeps the page anchored.
+  // Focus on load so a visitor can type immediately, but only where the chat
+  // fills the first viewport. Below lg, autofocus would raise the software
+  // keyboard before the visitor has read anything. preventScroll keeps the page
+  // anchored.
   useEffect(() => {
     if (!window.matchMedia('(min-width: 1024px)').matches) return
     ref.current?.focus({ preventScroll: true })
@@ -31,54 +40,70 @@ export function Composer({ onSubmit, disabled }: ComposerProps) {
   }
 
   return (
-    // Below lg the page scrolls, not the thread, so the composer sticks to the
-    // bottom of the viewport while the console is on screen. On touch it lets go
-    // while focused: iOS Safari can leave a sticky field behind the keyboard,
-    // and a static one is scrolled into view by the browser itself.
-    <div className="sticky bottom-0 z-10 border-t border-rule bg-surface px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-6 lg:static pointer-coarse:focus-within:static">
-      <form
-        onSubmit={(event) => {
-          event.preventDefault()
-          send()
-        }}
-        className="grid grid-cols-[1fr_auto] items-end gap-3"
-      >
-        {/* No placeholder-as-label: the real label is here for assistive tech and
-            the visible affordance is the keyboard hint below. */}
-        <label htmlFor={COMPOSER_ID} className="sr-only">
-          Ask Chak a question
-        </label>
-        <Textarea
-          id={COMPOSER_ID}
-          ref={ref}
-          rows={1}
-          enterKeyHint="send"
-          value={value}
-          disabled={disabled}
-          onChange={(event) => setValue(event.target.value)}
-          onKeyDown={(event) => {
-            if (event.key === 'Enter' && !event.shiftKey) {
-              event.preventDefault()
-              send()
-            }
+    <div
+      className={cn(
+        'w-full shrink-0',
+        // Docked below lg the page scrolls, not the thread, so the composer
+        // sticks to the bottom of the viewport. On touch it lets go while
+        // focused: iOS Safari can leave a sticky field behind the keyboard, and
+        // a static one is scrolled into view by the browser itself.
+        docked
+          ? 'sticky bottom-0 z-10 bg-surface pt-2 pb-[max(0.75rem,env(safe-area-inset-bottom))] lg:static lg:pb-6 pointer-coarse:focus-within:static'
+          : 'pt-8',
+      )}
+    >
+      {/* Padding inside the column cap, like the header and the turns, so all
+          three share one edge. */}
+      <div className="mx-auto max-w-3xl px-4 sm:px-6">
+        <form
+          onSubmit={(event) => {
+            event.preventDefault()
+            send()
           }}
-          placeholder="Ask about a ticket or an IT problem"
-          // 16px below sm: iOS Safari zooms the page into any field set smaller.
-          className="max-h-40 min-h-9 resize-none border-rule bg-paper px-2.5 py-2 text-base leading-relaxed placeholder:text-ink-3 sm:text-[15px] md:text-[15px] pointer-coarse:min-h-11"
-        />
-        <Button
-          type="submit"
-          disabled={disabled || value.trim().length === 0}
-          className="h-9 px-3 pointer-coarse:h-11"
+          // A quiet ring on focus: it is there on load at lg, where the field is
+          // focused for the visitor, so it should mark focus without shouting.
+          className="rounded-sm border border-rule-strong bg-surface shadow-composer transition-colors has-[textarea:focus-visible]:border-ring has-[textarea:focus-visible]:ring-2 has-[textarea:focus-visible]:ring-ring/20"
         >
-          Send
-          <ArrowUpIcon aria-hidden weight="bold" />
-        </Button>
-      </form>
-      {/* Phones have no Shift key; their return key reads "send" instead. */}
-      <p className="mt-2 font-mono text-[11px] text-ink-3 pointer-coarse:hidden">
-        Enter to send · Shift + Enter for a new line
-      </p>
+          {/* No placeholder-as-label: the real label is here for assistive tech and
+              the visible affordance is the keyboard hint below. */}
+          <label htmlFor={COMPOSER_ID} className="sr-only">
+            Ask Chak a question
+          </label>
+          <Textarea
+            id={COMPOSER_ID}
+            ref={ref}
+            rows={1}
+            enterKeyHint="send"
+            value={value}
+            disabled={disabled}
+            onChange={(event) => setValue(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault()
+                send()
+              }
+            }}
+            placeholder="Ask about a ticket or an IT problem"
+            // 16px below sm: iOS Safari zooms the page into any field set smaller.
+            className="max-h-48 min-h-12 resize-none rounded-none border-0 bg-transparent px-4 pt-3.5 pb-1 text-base leading-relaxed shadow-none placeholder:text-ink-3 focus-visible:ring-0 disabled:bg-transparent sm:text-[15px] md:text-[15px]"
+          />
+          <div className="flex items-center gap-3 pr-2.5 pb-2.5 pl-4">
+            {/* Phones have no Shift key; their return key reads "send" instead. */}
+            <p className="font-mono text-[11px] text-ink-3 pointer-coarse:hidden">
+              Enter to send · Shift + Enter for a new line
+            </p>
+            <Button
+              type="submit"
+              size="icon"
+              aria-label="Send"
+              disabled={disabled || value.trim().length === 0}
+              className="ml-auto size-9 pointer-coarse:size-11"
+            >
+              <ArrowUpIcon aria-hidden weight="bold" className="size-4" />
+            </Button>
+          </div>
+        </form>
+      </div>
     </div>
   )
 }

@@ -18,8 +18,9 @@ const FIELD =
 const ACTION = 'font-mono text-[11.5px] pointer-coarse:h-11'
 
 /** The machine facts under the ticket: what triage made of it before anyone
- *  decided. Priority is set in code from Jev's judgments. */
-function TriageLine({ approval }: { approval: PendingApproval }) {
+ *  decided. Priority is set in code from Jev's judgments. The eval replays
+ *  print it too, under their copy of the card. */
+export function TriageLine({ approval }: { approval: Pick<PendingApproval, 'priority' | 'triage'> }) {
   const triage = approval.triage
   const facts: Array<{ text: string; flagged?: boolean }> = []
   if (approval.priority && triage?.category) facts.push({ text: `${approval.priority} · ${triage.category}` })

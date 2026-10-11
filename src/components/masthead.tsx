@@ -8,7 +8,7 @@ export function Masthead() {
       <div className="mx-auto flex h-16 max-w-[1240px] items-center justify-between gap-6 px-5 sm:px-8">
         <a
           href="#top"
-          className="flex items-center gap-2.5 font-pixel text-[21px] leading-none text-ink pointer-coarse:-my-1.5 pointer-coarse:py-1.5"
+          className="flex items-center gap-2.5 text-[21px] leading-none font-semibold tracking-tight text-ink pointer-coarse:-my-1.5 pointer-coarse:py-1.5"
         >
           <ChakSprite size={32} />
           chak

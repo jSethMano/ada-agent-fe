@@ -13,8 +13,8 @@ grep -rnE 'rounded-(full|none)' src
 # Hard-coded colours. Tokens only; the sprite frames are the exception.
 grep -rnE '#[0-9a-fA-F]{3,8}\b' src --include='*.tsx' --include='*.ts' | grep -v chak-sprite-frames
 
-# Geist Pixel has one weight. font-medium on it does nothing.
-grep -rnE 'font-pixel[^"]*font-medium|font-medium[^"]*font-pixel' src
+# Geist Pixel was dropped. Nothing should ask for it.
+grep -rn 'font-pixel\|Geist Pixel' src
 
 # Below the 11px floor for machine text.
 grep -rnoE 'text-\[(9|10|10\.5)px\]' src
@@ -47,7 +47,7 @@ Flag new hits. Leave these alone unless the user asks.
 
 ## By eye
 
-- [ ] Every new piece of text is in one register (pixel prose, sans interface, mono record), and the register matches who is speaking.
+- [ ] Every new piece of text is in one register (sans for prose and interface, mono for the machine record), and the register matches whether a person or the machine produced it.
 - [ ] Trace rows, tool names, JSON, paths, and timings are literal. No character in the record.
 - [ ] Danger ink only where something failed or the Worker acted, and every flag has a word, not just a colour.
 - [ ] Any new button is outline or ghost unless it's Send. Nothing new is accent-filled.
@@ -62,6 +62,6 @@ Flag new hits. Leave these alone unless the user asks.
 `npm run dev`. With the Worker on 8787 for live turns, or with turns seeded in `localStorage` (see the `chat-console` skill).
 
 - [ ] **320px wide:** `document.documentElement.scrollWidth <= window.innerWidth` in the console. The page measured 8px too wide here once.
-- [ ] **`lg`, normal and enlarged:** click the sprite to toggle. The hero copy steps aside, and prose stays under 68ch.
+- [ ] **`lg`, empty and in a conversation:** the greeting and composer sit centred before the first message; after it, the thread scrolls inside the hero and the composer is docked. Header, turns, composer, and prompts share one column edge.
 - [ ] **Reduced motion** (DevTools → Rendering → Emulate `prefers-reduced-motion`): the sprite holds its idle frame, and disclosures open instantly.
 - [ ] **Keyboard only:** every control is reachable, the focus outline shows, and collapsed trace payloads are skipped.

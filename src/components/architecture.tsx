@@ -267,10 +267,10 @@ function PartPanel({ part }: { part: Part }) {
   return (
     <div className="grid gap-x-12 gap-y-8 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
       <div className="min-w-0">
-        <h3 id={`${PANEL_ID}-heading`} className="font-pixel text-[22px] text-ink">
+        <h3 id={`${PANEL_ID}-heading`} className="text-[22px] font-medium tracking-tight text-ink">
           {part.name}
         </h3>
-        <p className="mt-2 max-w-[62ch] font-pixel text-[16px] leading-[1.6] text-ink-2">{part.summary}</p>
+        <p className="mt-2 max-w-[62ch] text-[16px] leading-[1.6] text-ink-2">{part.summary}</p>
         <ol className="mt-6 space-y-4">
           {part.steps.map((step, index) => (
             <li key={step.label} className="grid grid-cols-[1.75rem_minmax(0,1fr)] gap-x-3">
@@ -300,7 +300,7 @@ function PartPanel({ part }: { part: Part }) {
           </dl>
         )}
         <div className="border-t border-rule pt-3">
-          <p className="font-pixel text-[11px] tracking-wide text-ink-3">in the code</p>
+          <p className="text-[12px] font-medium tracking-wide text-ink-3">in the code</p>
           <ul className="mt-2 space-y-1">
             {part.code.map((code) => {
               const url = codeUrl(code)
@@ -345,10 +345,10 @@ export function Architecture() {
   return (
     <section aria-labelledby="architecture-heading" className="border-t border-rule bg-surface">
       <div className="mx-auto max-w-[1240px] px-5 py-16 sm:px-8 lg:py-24">
-        <h2 id="architecture-heading" className="font-pixel text-[30px] leading-[1.15] text-ink sm:text-[36px]">
+        <h2 id="architecture-heading" className="text-[30px] leading-[1.15] font-semibold tracking-tight text-ink sm:text-[36px]">
           How Chak is built
         </h2>
-        <p className="mt-4 max-w-[62ch] font-pixel text-[17px] leading-[1.65] text-ink-2">
+        <p className="mt-4 max-w-[62ch] text-[17px] leading-[1.65] text-ink-2">
           Eight parts behind one request. Open one to see what happens there, in the order it happens.
         </p>
 

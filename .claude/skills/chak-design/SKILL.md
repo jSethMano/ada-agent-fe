@@ -1,6 +1,6 @@
 ---
 name: chak-design
-description: Keep UI work inside this page's locked design system. One light theme; three type registers (Geist Pixel for authored prose, Geist for interface, Geist Mono for the machine record); one accent with four jobs; a 2px radius everywhere; a budget of three motions; the phone rules (the page scrolls, 44px touch targets, 16px inputs, an 11px floor, no overflow at 320px); and Chak's character rules (sprite sizes, no cat-speak). Includes a review checklist with greps. Use before adding or restyling any component, copy, or CSS, and when reviewing a UI diff.
+description: Keep UI work inside this page's locked design system. One light theme; two type registers (Geist for prose and interface, Geist Mono for the machine record); one accent with four jobs; a 2px radius everywhere; a budget of three motions; the phone rules (the page scrolls, 44px touch targets, 16px inputs, an 11px floor, no overflow at 320px); and Chak's character rules (sprite sizes, no cat-speak). Includes a review checklist with greps. Use before adding or restyling any component, copy, or CSS, and when reviewing a UI diff.
 argument-hint: "[component or diff to build or review]"
 ---
 
@@ -14,13 +14,15 @@ Tokens and the reasoning behind them are in `src/index.css`. The full rules are 
 
 ## 1. Pick the register
 
-Every piece of text is in exactly one register. The font says who is speaking.
+Every piece of text is in exactly one register. The font says whether a person or the machine produced it; in the chat, the bubbles say which person.
 
 | Text | Register | Class | Notes |
 | --- | --- | --- | --- |
-| Headlines, Chak's answers, the builder's note, small lowercase section kickers outside the trace | Authored prose | `font-pixel` | One weight (400). Never pair it with `font-medium`, which does nothing. Emphasis is `font-semibold` (synthesized bold) |
-| Nav, buttons, labels, form fields, the visitor's own messages | Interface | default (Geist sans) | |
+| Headlines, subheads, ledes, the builder's note, small lowercase section kickers outside the trace | Prose | default (Geist sans) | h1/h2 `font-semibold tracking-tight`; subheads 18 to 22px `font-medium`; kickers `text-[12px] font-medium tracking-wide text-ink-3` |
+| Nav, buttons, labels, form fields, both sides of the chat | Interface | default (Geist sans) | Chat bubbles are 15px on both sides. Emphasis in answers is `font-semibold` |
 | Instance path, tool names, JSON, ordinals, timings, trace labels, triage facts | Machine record | `font-mono` | Tabular figures come from `index.css`. Size `text-[11px]` to `text-[13px]`, never under 11px |
+
+There is no third face. Geist Pixel was dropped on 2026-10-11 at the user's request; don't bring back `font-pixel`. The sprite is still pixel art.
 
 Character lives in the chrome, never in the record. Trace rows, JSON, tool names, paths, and timings stay literal, and the trace header says `router loop`.
 
@@ -28,7 +30,7 @@ Character lives in the chrome, never in the record. Trace rows, JSON, tool names
 
 Use tokens only: `paper`, `surface`, `ink`, `ink-2`, `ink-3`, `rule`, `rule-strong`, `accent-ink`, `accent-wash`, `danger`, `danger-wash`. Never put a hex value in a component. The sprite frames are the one exception.
 
-- **Marmalade (`accent-ink`, #A84A0C) has four jobs:** links, the Send button, the active-iteration marker (the pass count when more than one pass ran), and focus rings. Anything else that wants emphasis uses ink and weight. The approval card's "File ticket" is an outline button with an ink border, not an accent button.
+- **Marmalade (`accent-ink`, #A84A0C) has four jobs:** links, the Send button, the active-iteration marker (the pass count when more than one pass ran), and focus rings. Anything else that wants emphasis uses ink and weight. The approval card's "File ticket" is an outline button with an ink border, not an accent button. The visitor's chat bubble is ink: `Bubble`'s `default` variant is re-tokenized so it can never be marmalade.
 - **Crimson (`danger`, #A3123A) means something went wrong or the Worker acted:** failures, `blocked`, `held`, `replaced`, a flagged answer, a security incident. It is never decoration. A flag always carries a word ("flagged", "security incident") as well as the colour.
 - **Bright fur orange (#E8772E) is 2.7:1** and lives only in the sprite. It never carries text or a control.
 
@@ -36,12 +38,13 @@ Use tokens only: `paper`, `surface`, `ink`, `ink-2`, `ink-3`, `rule`, `rule-stro
 
 - **Every radius is 2px.** All shadcn radius tokens alias `--radius`, so `rounded-lg` is 2px too. Nothing is a pill: no `rounded-full`.
 - **One light theme.** `@custom-variant dark` in `index.css` makes `dark:` class-driven, and `.dark` is never set. Don't remove the variant, don't add a theme toggle, and don't expect a `dark:` utility to do anything.
-- **Three motions, no more:** the trace disclosure (`.disclosure`, `grid-template-rows` 0fr→1fr), the in-flight `.chak-think` sprite loop (the page's only `@keyframes`), and button press feedback (`translate-y-px`). Hover colour changes are fine. Anything that moves, grows, or fades in over time has to be one of the three. No animation library. The enlarge toggle is instant on purpose. `prefers-reduced-motion` collapses everything through the global rule in `index.css`.
+- **Three motions, no more:** the trace disclosure (`.disclosure`, `grid-template-rows` 0fr→1fr), the in-flight `.chak-think` sprite loop (the page's only `@keyframes`), and button press feedback (`translate-y-px`). Hover colour changes are fine. Anything that moves, grows, or fades in over time has to be one of the three. No animation library. The composer's move from the middle of the hero to the bottom is instant on purpose. `prefers-reduced-motion` collapses everything through the global rule in `index.css`.
 
 ## 4. Layout
 
-- At `lg` and up, the console is a fixed-height panel with its own scrolling thread. The enlarge toggle switches it between the hero's 7fr column and the full row, and every class it switches is `lg:`.
-- Answer and question prose is capped at `max-w-[68ch]`, so it stays readable in the enlarged console.
+- The hero is the chat alone, ChatGPT style, in one centred `max-w-3xl` column: greeting and composer in the middle before the first message, thread with the composer docked under it after. At `lg` and up it is exactly the viewport under the masthead and the thread scrolls inside it. The composer box is the page's one shadow (`shadow-composer`).
+- The thread is chat bubbles: the visitor on the right (ink), Chak on the left (`muted`), each with a `BubbleTail`. Only prose goes in a bubble. The trace, approval card, notice, and errors stay outside at full width.
+- Answer and question prose is capped at `max-w-[68ch]`.
 - Below `lg`, the page scrolls, never a panel. Don't add nested scroll containers on phones.
 
 ## 5. Phones
@@ -73,7 +76,7 @@ Use tokens only: `paper`, `surface`, `ink`, `ink-2`, `ink-3`, `rule`, `rule-stro
 
 ## Review
 
-Before calling UI work done, run [references/review-checklist.md](references/review-checklist.md) over the diff, then look at the page at 320px and at `lg`, enlarged and not.
+Before calling UI work done, run [references/review-checklist.md](references/review-checklist.md) over the diff, then look at the page at 320px and at `lg`, before the first message and with a conversation open.
 
 ## Keeping this skill in sync
 

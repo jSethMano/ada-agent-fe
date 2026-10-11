@@ -7,7 +7,7 @@ export function SiteFooter() {
     <footer className="border-t border-rule bg-surface">
       <div className="mx-auto grid max-w-[1240px] gap-x-10 gap-y-10 px-5 py-14 sm:px-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
         <div>
-          <p className="flex items-center gap-2.5 font-pixel text-[20px] text-ink">
+          <p className="flex items-center gap-2.5 text-[20px] font-semibold tracking-tight text-ink">
             <ChakSprite size={32} />
             chak
           </p>
@@ -36,7 +36,7 @@ export function SiteFooter() {
 
         <div className="grid gap-x-8 gap-y-8 sm:grid-cols-2">
           <div>
-            <h2 className="border-b border-rule pb-2 font-pixel text-[11px] tracking-wide text-ink-3">
+            <h2 className="border-b border-rule pb-2 text-[12px] font-medium tracking-wide text-ink-3">
               stack
             </h2>
             <ul className="mt-3 space-y-1.5">
@@ -52,7 +52,7 @@ export function SiteFooter() {
           </div>
 
           <div>
-            <h2 className="border-b border-rule pb-2 font-pixel text-[11px] tracking-wide text-ink-3">
+            <h2 className="border-b border-rule pb-2 text-[12px] font-medium tracking-wide text-ink-3">
               inference
             </h2>
             <dl className="mt-3 space-y-2.5 text-[13px]">

@@ -7,12 +7,12 @@ export function BuildersNote() {
         <div>
           <h2
             id="note-heading"
-            className="font-pixel text-[30px] leading-[1.15] text-ink sm:text-[36px]"
+            className="text-[30px] leading-[1.15] font-semibold tracking-tight text-ink sm:text-[36px]"
           >
             What it actually does
           </h2>
 
-          <div className="mt-6 space-y-5 font-pixel text-[17px] leading-[1.65] text-ink-2">
+          <div className="mt-6 space-y-5 text-[17px] leading-[1.65] text-ink-2">
             <p>
               Chak is an internal IT helpdesk agent for a company that does not exist. Employees
               ask him about broken laptops, VPN trouble, password resets, and their tickets. He
@@ -36,7 +36,7 @@ export function BuildersNote() {
         </div>
 
         <aside className="border-t border-rule pt-5 lg:border-t-0 lg:border-l lg:pt-1 lg:pl-8">
-          <p className="font-pixel text-[11px] tracking-wide text-ink-3">what is real</p>
+          <p className="text-[12px] font-medium tracking-wide text-ink-3">what is real</p>
           <dl className="mt-3 space-y-3.5 text-[13.5px] leading-relaxed">
             <div>
               <dt className="font-mono text-[12px] text-ink">model, routing, memory</dt>

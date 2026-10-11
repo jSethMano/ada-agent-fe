@@ -11,11 +11,11 @@ export function Capabilities() {
       <div className="mx-auto max-w-[1240px] px-5 py-16 sm:px-8 lg:py-24">
         <h2
           id="capabilities-heading"
-          className="font-pixel text-[30px] leading-[1.15] text-ink sm:text-[36px]"
+          className="text-[30px] leading-[1.15] font-semibold tracking-tight text-ink sm:text-[36px]"
         >
           What Chak can do, besides meowing when he's hungry.
         </h2>
-        <p className="mt-4 max-w-[62ch] font-pixel text-[17px] leading-[1.65] text-ink-2">
+        <p className="mt-4 max-w-[62ch] text-[17px] leading-[1.65] text-ink-2">
           Everything listed here is live, and each one is read off the Worker
           source. Trying one puts its prompt in the chat box above; you choose
           when to send it.
@@ -25,7 +25,7 @@ export function Capabilities() {
         <ul className="mt-10 grid gap-x-10 sm:grid-cols-2 lg:grid-cols-3">
           {CAPABILITIES.map(({ title, detail, mechanism, example }) => (
             <li key={title} className="border-t border-rule py-4 sm:py-5">
-              <h3 className="font-pixel text-[18px] leading-snug text-ink">
+              <h3 className="text-[18px] leading-snug font-medium text-ink">
                 {title}
               </h3>
               <p className="mt-1.5 text-[14px] leading-relaxed text-ink-2">
@@ -56,7 +56,7 @@ export function Capabilities() {
 
         <div className="mt-12 grid gap-x-10 gap-y-10 lg:grid-cols-3">
           <div className="lg:col-span-2">
-            <h3 className="border-b border-rule-strong pb-2 font-pixel text-[11px] tracking-wide text-ink-3">
+            <h3 className="border-b border-rule-strong pb-2 text-[12px] font-medium tracking-wide text-ink-3">
               cannot do
             </h3>
             <ul className="mt-4 space-y-2.5">
@@ -71,7 +71,7 @@ export function Capabilities() {
             </ul>
           </div>
           <div>
-            <h3 className="border-b border-rule-strong pb-2 font-pixel text-[11px] tracking-wide text-ink-3">
+            <h3 className="border-b border-rule-strong pb-2 text-[12px] font-medium tracking-wide text-ink-3">
               limits
             </h3>
             <ul className="mt-4 space-y-2.5">

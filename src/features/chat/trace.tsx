@@ -246,7 +246,9 @@ function CheckRow({ entry, ordinal }: { entry: CheckEntry; ordinal: number }) {
       ms={entry.ms}
       summary={
         <span className="flex flex-wrap items-baseline gap-x-2">
-          <code className="font-mono text-[13px] font-medium text-ink">jev.{entry.check}</code>
+          {/* Breakable too: on a 320px phone `jev.triage_ticket` is wider than
+              its column and ran into the timing beside it. */}
+          <code className="font-mono text-[13px] font-medium text-ink">jev.{breakableId(entry.check)}</code>
           {entry.action && (
             <code className="font-mono text-[11.5px] font-medium text-danger">{entry.action}</code>
           )}

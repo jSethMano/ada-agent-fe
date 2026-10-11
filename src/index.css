@@ -1,16 +1,14 @@
 @import "tailwindcss";
 @import "shadcn/tailwind.css";
 
-/* Three faces, three registers.
-   Geist Pixel  = authored prose   (headlines, the builder's note, Chak's answers,
-                                    and the small lowercase kickers that head a group)
-   Geist        = interface        (nav, buttons, labels, the visitor's own messages)
+/* Two faces, two registers.
+   Geist        = everything people say or read as prose: headlines, the
+                  builder's note, kickers, interface, and both sides of the chat
    Geist Mono   = machine record   (instance path, tool names, JSON, iteration ordinals)
-   Geist Pixel ships one weight (400), so nothing set in it asks for font-medium.
+   In the chat, who is speaking is carried by the bubbles, not the face.
    Self-hosted via Fontsource. No <link> to Google Fonts. */
 @import "@fontsource-variable/geist";
 @import "@fontsource-variable/geist-mono";
-@import "@fontsource-variable/geist-pixel";
 
 /* This page ships one theme on purpose (Page Theme Lock), so `dark:` must be
    class-driven, not media-driven. Without this, Tailwind v4 falls back to
@@ -23,8 +21,12 @@
 @theme inline {
   --font-sans: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "Geist Mono Variable", ui-monospace, SFMono-Regular, monospace;
-  --font-pixel: "Geist Pixel Variable", ui-monospace, SFMono-Regular, monospace;
-  --font-heading: var(--font-pixel);
+  --font-heading: var(--font-sans);
+
+  /* The page's one shadow: the composer, lifted off the hero like a ChatGPT
+     prompt box. Ink (#17181a) at low alpha, so it tints with the palette
+     instead of going grey-black. Nothing else casts one. */
+  --shadow-composer: 0 1px 2px rgb(23 24 26 / 0.04), 0 6px 24px rgb(23 24 26 / 0.07);
 
   --color-paper: var(--paper);
   --color-surface: var(--surface);

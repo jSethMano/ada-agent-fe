@@ -1,4 +1,5 @@
 import { Fragment, type ReactNode } from 'react'
+import { Bubble, BubbleContent, BubbleTail } from '@/components/ui/bubble'
 
 /**
  * Minimal renderer for the small amount of Markdown the model actually emits.
@@ -22,8 +23,6 @@ function renderInline(text: string, keyPrefix: string): ReactNode[] {
 
     if (token.startsWith('**') && token.endsWith('**')) {
       return (
-        // Geist Pixel has no bold, so this relies on the browser synthesising one.
-        // font-medium (500) would match the 400 face and render no emphasis at all.
         <strong key={key} className="font-semibold text-ink">
           {token.slice(2, -2)}
         </strong>
@@ -60,22 +59,29 @@ function renderInline(text: string, keyPrefix: string): ReactNode[] {
   })
 }
 
+/** Chak's answer, in his bubble on the left. Muted, not ink: the ink bubble is
+ *  the visitor's. */
 export function Answer({ text }: { text: string }) {
   const paragraphs = text.trim().split(/\n{2,}/)
 
   return (
-    // Capped so prose stays readable when the console is enlarged to full width.
-    <div className="mt-3 max-w-[68ch] space-y-3 font-pixel text-[17px] leading-[1.6] text-ink">
-      {paragraphs.map((paragraph, pIndex) => (
-        <p key={pIndex}>
-          {paragraph.split('\n').map((line, lIndex) => (
-            <Fragment key={lIndex}>
-              {lIndex > 0 && <br />}
-              {renderInline(line, `${pIndex}-${lIndex}`)}
-            </Fragment>
-          ))}
-        </p>
-      ))}
-    </div>
+    // Capped so prose stays readable even where the chat column is wide.
+    <Bubble variant="muted" className="mt-3 max-w-[min(92%,68ch)]">
+      {/* Same size and padding as the visitor's bubble, so a thread reads as
+          one conversation and both tails sit level with the first line. */}
+      <BubbleTail />
+      <BubbleContent className="space-y-3 px-3.5 py-2 text-[15px] leading-relaxed text-ink">
+        {paragraphs.map((paragraph, pIndex) => (
+          <p key={pIndex}>
+            {paragraph.split('\n').map((line, lIndex) => (
+              <Fragment key={lIndex}>
+                {lIndex > 0 && <br />}
+                {renderInline(line, `${pIndex}-${lIndex}`)}
+              </Fragment>
+            ))}
+          </p>
+        ))}
+      </BubbleContent>
+    </Bubble>
   )
 }

@@ -78,7 +78,7 @@ Already right: no overflow anywhere, `min-h-[100dvh]`, autofocus only at ≥1024
 
 | # | Change | How |
 |---|---|---|
-| 5 | **Stack the speaker label on phones** | `Row`: `grid-cols-1` below `sm` with the `you` / `chak` label on its own line above the content; today's gutter returns at `sm`. Gives back about 56px (roughly 25% of the content width at 360). |
+| 5 | **Stack the speaker label on phones** | Superseded 2026-10-11: the thread is now chat bubbles (`VisitorMessage`, `ChakReply` in `turn.tsx`) with no speaker gutter at any width, so traces get the full content width everywhere. |
 | 6 | **Tighter trace indents on phones** | Trace `pl-3` → `pl-2` and row ordinal column `1.75rem` → `1.5rem` below `sm`. |
 | 7 | **Wrap JSON on phones** | Payload `<pre>`: `whitespace-pre-wrap [overflow-wrap:anywhere] sm:whitespace-pre`. Same characters, same indentation; long strings wrap instead of hiding. The record isn't changed, only its line breaks. |
 | 8 | **Compress the hero on phones** | Sprite 64 → **48** (still a multiple of 16), `mb-6` → `mb-4`, h1 40px → 34px, section `pt-10` → `pt-6`. The console moves up by about 80px. `sm` and up are unchanged. |

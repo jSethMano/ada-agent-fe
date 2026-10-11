@@ -50,7 +50,7 @@ export function ConversationMenu({
         align="end"
         className="w-[min(22rem,calc(100vw-2rem))] border-rule bg-surface p-0"
       >
-        <p className="border-b border-rule px-3 py-2 font-pixel text-[11px] tracking-wide text-ink-3">
+        <p className="border-b border-rule px-3 py-2 text-[12px] font-medium tracking-wide text-ink-3">
           past conversations
         </p>
 

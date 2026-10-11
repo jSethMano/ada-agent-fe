@@ -123,7 +123,7 @@ Replace `You are Ada, an internal helpdesk assistant…` with:
 
 ### Wordmark
 
-32px idle sprite + `chak` in Geist Pixel 21px, lowercase, ink. In running prose the name is "Chak".
+32px idle sprite + `chak` in Geist 21px semibold, lowercase, ink. In running prose the name is "Chak".
 
 ### Palette
 
@@ -153,7 +153,7 @@ Danger moves to crimson because the old red-orange sits too close in hue to the 
 
 ### Type
 
-Unchanged: Geist Pixel (authored prose and kickers), Geist (interface), Geist Mono (machine record). Geist Pixel and the sprite share a pixel grid, which is why this works as one system.
+Geist (prose, kickers, interface) and Geist Mono (machine record). Geist Pixel was dropped on 2026-10-11 at the user's request; the sprite stays pixel art, and the chat bubbles now carry who is speaking.
 
 ### Shape
 
@@ -171,7 +171,7 @@ Unchanged: Geist Pixel (authored prose and kickers), Geist (interface), Geist Mo
 |---|---|
 | `idle` | Masthead 32, hero 128, empty console 48, footer 32, favicon 16/32 |
 | `blink` + `tail-up` | Thinking animation frames (pending turn, 16) |
-| `ears-back` | Failed turn, overran turn, gateway error (16 in the gutter row) |
+| `ears-back` | Failed turn, overran turn, gateway error (16, beside his name at the top of the reply) |
 
 Source matrices (legend above, `.` = transparent):
 
@@ -222,10 +222,10 @@ Footer          [cat 32] chak
 
 ### New section: "What Chak can do"
 
-- `h2` in Geist Pixel like the other sections. Kicker `capabilities` in Geist Pixel 11px.
+- `h2` in Geist semibold like the other sections. Kicker `capabilities` in Geist 12px medium.
 - A 3-column grid (1 on mobile) of **rows, not cards**: no boxes inside the section box, separated by `--rule` hairlines, matching the status ledger.
 - Each row:
-  - title (Geist Pixel 18px, ink)
+  - title (Geist 18px medium, ink)
   - one sentence (Geist 14px, ink-2)
   - mechanism (Geist Mono 11px, ink-3)
   - **Try it ↗**, an accent link that drops the example prompt into the composer and scrolls to `#console`. It doesn't auto-send, so the visitor still chooses.

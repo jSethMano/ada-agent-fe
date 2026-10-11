@@ -70,7 +70,7 @@ src/
   routes/chak-page.tsx          the single page
   features/chat/                console, transcript, trace, composer, session + ask hooks
   components/                   masthead, capabilities, builder's note, architecture (eight parts that open), eval results, status, footer, chak-sprite
-  components/ui/                shadcn primitives (button, textarea), re-tokenized
+  components/ui/                shadcn primitives (bubble, button, popover, textarea), re-tokenized
   lib/api/{client,types}.ts     typed client + wire types (source of truth for the contract)
   lib/site.ts                   facts printed on the page, read off the Worker source (not retyped)
   lib/evals.ts, data/evals.json the "How he's measured" section: eval runs and featured traces, generated in ada-agent
@@ -78,15 +78,17 @@ src/
 
 `@/*` resolves to `./src/*` (tsconfig + Vite alias).
 
-At `lg`+ the hero sprite is a button (`EnlargeChatButton`, with a "click me to enlarge" callout) that toggles the console between the hero's 7fr column and the full row. Enlarged, the hero copy steps aside (the `h1` stays as `lg:sr-only` for the `aria-labelledby`) and the sprite drops to 64px. Below `lg` the console is already full width, so the plain sprite renders instead and every class the toggle switches is `lg:`. No animation: the switch is instant, so the motion budget stays at three. Answer and question prose are capped at `68ch` so they stay readable in the enlarged console.
+The hero is the chat and nothing else, ChatGPT style (`ChakConsole` renders the whole `<section id="console">`, and owns the page's `h1`). Everything sits in one centred `max-w-3xl` column: a slim top bar (memory scope, History, New), then either the greeting (sprite, `h1`, one line) with the composer in the middle and the four suggested prompts under it, or, once there is a turn, the thread with the composer docked under it. The composer keeps one slot in the tree, so the move from middle to bottom never remounts it or drops the draft, and it is instant (the motion budget stays at three). With turns, the `h1` stays as `sr-only` for the section's `aria-labelledby`. "New" brings the greeting back. Answer and question prose are capped at `68ch`. The old split hero and its enlarge toggle were removed on 2026-10-11.
 
 ### Design system (locked)
 
 This is a "Page Theme Lock" build — one light theme, deliberately. Editing must respect the locks or the page loses its point:
 
 - **`dark:` variant is neutered.** `src/index.css` defines `@custom-variant dark (&:where(.dark, .dark *))` and `.dark` is never applied anywhere. Without this override, Tailwind v4 falls back to `prefers-color-scheme` and every `dark:*` utility baked into the shadcn primitives fires for OS-dark visitors — giving them dark inputs on a light page. Do not remove this variant; do not add a theme toggle.
-- **Three type registers, one rule each:** `Geist Pixel` (`font-pixel`) = authored prose (headlines, Chak's answers, and the small lowercase section kickers outside the console's trace); `Geist` (sans) = interface (nav, buttons, labels, visitor messages); `Geist Mono` = machine record (instance path, tool names, JSON, iteration ordinals, timings). All self-hosted via Fontsource — no `<link>` to Google Fonts. Geist Pixel ships a single 400 weight, so don't pair it with `font-medium` (it silently does nothing); emphasis inside answers uses `font-semibold` to get a synthesized bold.
-- **Marmalade `#A84A0C` is the only accent** (5.3:1 on paper) and has exactly four jobs: links, the Send button, the active-iteration marker, focus rings. The approval card's "File ticket" is not one of them: it is an outline button with an ink border. `--danger` is crimson `#A3123A`, deliberately far from the accent's hue so an error never reads as a link.
+- **Two type registers, one rule each:** `Geist` (sans, the default) = everything read as prose or interface: headlines (`font-semibold tracking-tight`), subheads (`font-medium`), ledes, the small lowercase section kickers (12px `font-medium`), nav, buttons, labels, and both sides of the chat; `Geist Mono` = machine record (instance path, tool names, JSON, iteration ordinals, timings). In the chat, who is speaking is carried by the bubbles, not the face, so Chak's answers and the visitor's messages are both Geist 15px. Geist Pixel was dropped on 2026-10-11 (the user didn't want the pixel look); the sprite stays pixel art. All self-hosted via Fontsource — no `<link>` to Google Fonts.
+- **Marmalade `#A84A0C` is the only accent** (5.3:1 on paper) and has exactly four jobs: links, the Send button, the active-iteration marker, focus rings. The approval card's "File ticket" is not one of them: it is an outline button with an ink border. Nor is the visitor's chat bubble: `components/ui/bubble.tsx` re-tokenizes shadcn's `default` variant from `bg-primary` to ink, and drops `tinted` (a wash of primary). `--danger` is crimson `#A3123A`, deliberately far from the accent's hue so an error never reads as a link.
+- **The thread is chat bubbles** (`VisitorMessage` and `ChakReply` in `turn.tsx`, on the shadcn Bubble). The visitor's message is on the right in the ink bubble; Chak's answer is on the left in the `muted` bubble (ink 15.3:1, links 4.95:1). Each has a callout tail (`BubbleTail`, not in shadcn). Only prose goes in a bubble: the trace, approval card, notice, and errors sit outside at full width under his sprite and name, because traces need the room and the record is never dressed up as speech.
+- **One shadow, the composer's** (`--shadow-composer`, ink at low alpha). Nothing else casts one.
 - **Every radius is 2px.** `--radius: 2px` is aliased into every shadcn radius token (`--radius-sm` through `--radius-4xl`). Nothing is ever a pill.
 - **Motion is three CSS transitions:** trace disclosure (`.disclosure` uses `grid-template-rows 0fr→1fr` — height-agnostic collapse without JS measurement), the in-flight `.chak-think` sprite loop (the page's only `@keyframes`; reduced motion shows the static idle frame), and button press feedback. No animation library. Everything collapses under `prefers-reduced-motion`.
 
@@ -94,7 +96,7 @@ Colors and tokens are in `src/index.css` under `:root`. shadcn semantic tokens (
 
 ### Mobile (design: `docs/design/mobile.md`)
 
-- **Below `lg` the page scrolls, never a panel.** The console is a fixed-height panel with its own scrolling thread only at `lg`+. Below that, the composer is `sticky bottom-0` (with a safe-area bottom pad) and `ChakConsole` scrolls the *page* to the newest turn, never on first load and only when the visitor is already watching it. Don't add nested scroll containers on phones.
+- **Below `lg` the page scrolls, never a panel.** Only at `lg`+ is the hero exactly the viewport under the masthead (`h-[calc(100dvh-4rem)]`), with the thread scrolling inside it; below that it is at least that tall. Below that, the composer is `sticky bottom-0` (with a safe-area bottom pad) and `ChakConsole` scrolls the *page* to the newest turn, never on first load and only when the visitor is already watching it. Don't add nested scroll containers on phones.
 - **Touch-only fixes use `pointer-coarse:`**, so desktop stays unchanged: 44px hit areas (padding plus negative margin where the visual size must not change), the always-visible History delete, the hidden "Shift + Enter" hint, and the composer letting go of `sticky` while focused (iOS keyboard fallback).
 - **Inputs are 16px below `sm`**, or iOS Safari zooms the page on focus. The textarea has `enterKeyHint="send"`.
 - **Machine-register text floor is 11px.** Don't reintroduce 10.5px.
@@ -111,7 +113,7 @@ Chak is an orange-and-white office cat. Pronoun: **he**. The character is a tone
 
 ### Eval results on the page
 
-`src/data/evals.json` is generated, never hand-edited: from ada-agent, run `npm run eval:export -- --to ../ada-agent-fe/src/data/evals.json` after a new eval run is added to `evals/page.config.ts`. The export refuses to write unless every run it includes was graded with the same answer key, so the table always compares like with like. `EvalResults` (`src/components/eval-results.tsx`) renders the table and the featured before/after cases with the console's own `Trace`, `Answer`, and `Notice`. Featured-case copy lives in `FEATURED_COPY` (`src/lib/evals.ts`), and every sentence there must match the exported traces: re-read it after each export. Below `sm`, only the first and last runs show in the table, so it fits 320px.
+`src/data/evals.json` is generated, never hand-edited: from ada-agent, run `npm run eval:export -- --to ../ada-agent-fe/src/data/evals.json` after a new eval run is added to `evals/page.config.ts`. The export refuses to write unless every run it includes was graded with the same answer key, so the table always compares like with like. `EvalResults` (`src/components/eval-results.tsx`) renders the table and the featured before/after cases. Each side is a read-only copy of the console: the same frame, `VisitorMessage` and `ChakReply` (`turn.tsx`), `Trace`, `Answer`, `Notice`, and `TriageLine` under a copy of the approval card, with the visitor's decision on their side of the thread and a drawn composer bar (no field, no button). So a change to those components shows in the replays too. Featured-case copy lives in `FEATURED_COPY` (`src/lib/evals.ts`), and every sentence there must match the exported traces: re-read it after each export. Below `sm`, only the first and last runs show in the table, so it fits 320px.
 
 ### Facts on the page
 
