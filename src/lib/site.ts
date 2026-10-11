@@ -46,6 +46,26 @@ export const SITE = {
    *  holds a password, key, or token the visitor pasted), and the model is told
    *  to rewrite it without the secret. */
   triageHold: { specificProblemBelow: 0.5, statedByUserBelow: 0.5, secretAbove: 0.5 },
+
+  /** RATE_LIMITER `simple` in ada-agent/wrangler.jsonc. */
+  rateLimit: { requests: 10, seconds: 60 },
+
+  /** MAX_HISTORY_ENTRIES in ada-agent/src/index.ts: messages each conversation keeps. */
+  historyEntries: 20,
+
+  /** The help-article search: EMBEDDING_MODEL, KB_DIMENSIONS, and
+   *  KB_RESULT_LIMITS.articles in ada-agent/src/kb.ts, the index in its
+   *  wrangler.jsonc, and the files in its kb/articles/. `live` stays false until
+   *  the Worker with search_kb is deployed; until then the page says it is built
+   *  but not live. */
+  kb: {
+    live: false,
+    index: 'chak-kb',
+    embeddingModel: '@cf/baai/bge-m3',
+    dimensions: 1024,
+    topK: 3,
+    articles: 15,
+  },
 } as const
 
 /**

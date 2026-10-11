@@ -38,15 +38,18 @@ No test compares these with the Worker. The Worker's `test/skills.spec.ts` check
 | `BLOCK` in `src/jev/input-guard.ts` | `SITE.guardBlock` | `CAPABILITIES`, `GUARDRAILS`, `architecture.tsx` |
 | `REPLACE` in `src/jev/verify-answer.ts` | `SITE.answerReplace` | `CAPABILITIES`, `GUARDRAILS`, `architecture.tsx` |
 | `HOLD` in `src/jev/triage-ticket.ts` | `SITE.triageHold` | `GUARDRAILS` |
+| `RATE_LIMITER` `simple` in `wrangler.jsonc` (also as a literal in `GUARDRAILS`) | `SITE.rateLimit` | the API part in `architecture.tsx` |
+| `MAX_HISTORY_ENTRIES` in `src/index.ts` | `SITE.historyEntries` | the State part in `architecture.tsx` |
+| `EMBEDDING_MODEL`, `KB_DIMENSIONS`, `KB_RESULT_LIMITS.articles` in `src/kb.ts`; the `chak-kb` index in `wrangler.jsonc`; the files in `kb/articles/` | `SITE.kb` (`live` flips to `true` when the Worker with `search_kb` deploys) | the Data, Models, and Workflow parts in `architecture.tsx` |
 | `MAX_TRIAGE_CANDIDATES` in `src/index.ts` | `SITE.triageCandidates` | `CAPABILITIES` |
 | `derivePriority()` and `SECURITY_INCIDENT_ABOVE` in `src/jev/triage-ticket.ts` | The literal "a priority from P1 to P4, and a security incident is always P1" in the "Triages every ticket" entry of `CAPABILITIES` | Capabilities section. A change to the priority policy makes this sentence wrong, with nothing to flag it |
 | `MAX_QUESTION_LENGTH` in `src/index.ts` | Literal `'2,000 characters per question'` in `GUARDRAILS` | Capabilities section |
 | `RATE_LIMITER` `simple.limit` / `period` in `wrangler.jsonc` | Literal `'10 requests per minute per IP'` in `GUARDRAILS`, and the last "shipped" item in `status-ledger.tsx` | Both literal |
-| `TOOLS` and `TOOL_ROUTING` in `src/index.ts` | `IT_AGENT.tools` in `architecture.tsx`; the tool-backed `CAPABILITIES`; "He has three tools" in `CAPABILITIES`; `SUGGESTED_PROMPTS` in `src/features/chat/suggested-prompts.ts` | `list_tickets` is router-only and never listed |
+| `TOOLS` and `TOOL_ROUTING` in `src/index.ts` | the Workflow part's `tools` fact in `PARTS` (`architecture.tsx`, `search_kb` gated by `SITE.kb.live`); the tool-backed `CAPABILITIES`; "He has three tools" in `CAPABILITIES`; `SUGGESTED_PROMPTS` in `src/features/chat/suggested-prompts.ts` | `list_tickets` is router-only and never listed |
 | Durable Object binding `Chak` in `wrangler.jsonc` | `AGENT.slug` in `site.ts`, used by `instancePath()` | Not free to change: every saved conversation routes on it. Report a rename instead of making it |
 | Fixture tickets 42 and 77 (`ItAgent`) | `CANNOT`; "known limits" in `status-ledger.tsx`; `CAPABILITIES` and `SUGGESTED_PROMPTS` examples | |
 | What the system prompt allows and refuses (`src/system-prompt.ts`) | `CAPABILITIES`, `CANNOT`, the "shipped" list in `status-ledger.tsx` | `CAPABILITIES` lists live behavior only. Planned work goes under "next" in the ledger |
-| Turn order: guard → loop → triage → approval → call → verify (`Chak.onRequest`) | `LOOP_STEPS` in `architecture.tsx`, the doc comments on `TraceEntry` and `Trace`, the trace paragraph in `CLAUDE.md` | |
+| Turn order: guard → loop → (search) → triage → approval → call → verify (`Chak.onRequest`) | the Workflow part's `steps` in `PARTS` (`architecture.tsx`), the doc comments on `TraceEntry` and `Trace`, the trace paragraph in `CLAUDE.md` | |
 
 ## Eval results
 

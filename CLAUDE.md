@@ -69,7 +69,7 @@ Client-side elapsed time is measured with `performance.now()` and attached to `C
 src/
   routes/chak-page.tsx          the single page
   features/chat/                console, transcript, trace, composer, session + ask hooks
-  components/                   masthead, capabilities, builder's note, architecture diagram, eval results, status, footer, chak-sprite
+  components/                   masthead, capabilities, builder's note, architecture (eight parts that open), eval results, status, footer, chak-sprite
   components/ui/                shadcn primitives (button, textarea), re-tokenized
   lib/api/{client,types}.ts     typed client + wire types (source of truth for the contract)
   lib/site.ts                   facts printed on the page, read off the Worker source (not retyped)
