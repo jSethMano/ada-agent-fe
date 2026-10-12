@@ -1,11 +1,11 @@
 @import "tailwindcss";
 @import "shadcn/tailwind.css";
 
-/* Two faces, two registers.
-   Geist        = everything people say or read as prose: headlines, the
-                  builder's note, kickers, interface, and both sides of the chat
-   Geist Mono   = machine record   (instance path, tool names, JSON, iteration ordinals)
-   In the chat, who is speaking is carried by the bubbles, not the face.
+/* One face for the whole page: Geist. Headlines, prose, interface, both sides
+   of the chat, and the trace (tool names, paths, timings) all use it, so the
+   page reads uniform (2026-10-12, at the user's request).
+   Geist Mono is kept for raw code only: the JSON payloads in the trace and
+   inline `code` in Chak's answers. Those carry `font-mono` explicitly.
    Self-hosted via Fontsource. No <link> to Google Fonts. */
 @import "@fontsource-variable/geist";
 @import "@fontsource-variable/geist-mono";
@@ -39,6 +39,8 @@
   --color-accent-wash: var(--accent-wash);
   --color-danger: var(--danger);
   --color-danger-wash: var(--danger-wash);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
 
   --color-ring: var(--ring);
   --color-input: var(--input);
@@ -59,15 +61,17 @@
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
 
-  /* Shape lock: one radius for the whole page. 2px reads precise, not friendly.
-     Nothing is ever a pill. shadcn derives sm/md/lg from this single value. */
-  --radius-sm: var(--radius);
-  --radius-md: var(--radius);
+  /* Shape: soft corners, no hard edges (changed from 2px everywhere on
+     2026-10-12 at the user's request). One scale off --radius, shadcn's own:
+     sm 6 · md 8 · lg 10 (buttons, inputs) · xl 14 (cards, bubbles, trace) ·
+     2xl 18 (frames) · 3xl 22 (the composer) · 4xl 26 (badges, so they are pills). */
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
-  --radius-xl: var(--radius);
-  --radius-2xl: var(--radius);
-  --radius-3xl: var(--radius);
-  --radius-4xl: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
 }
 
 :root {
@@ -85,15 +89,20 @@
 
   /* Marmalade, Chak's coat darkened until it passes AA as text. Flat, never
      glowing, never gradient. The bright fur orange (#E8772E) is 2.7:1 and lives
-     only in the sprite. Exactly four jobs: links, the Send button, the
-     active-iteration marker, focus rings. */
+     only in the sprite. Exactly five jobs: links, the Send button, the
+     active-iteration marker, focus rings, and section titles (marmalade on
+     --accent-wash, via <Highlight>; 5.1:1). A title never sits on a link. */
   --accent-ink: #a84a0c;
   --accent-wash: #fbefe6;
   /* Crimson, pulled away from the accent's hue so an error never reads as a link. */
   --danger: #a3123a;
   --danger-wash: #fbecef;
+  /* Forest green, for the one confirming action: the approval card's "File
+     ticket". Surface text on it is 6.4:1. Not an accent and not decoration. */
+  --success: #1d6b41;
+  --success-foreground: var(--surface);
 
-  --radius: 2px;
+  --radius: 0.625rem;
 
   /* shadcn semantic contract, mapped onto the tokens above so the primitives
      inherit this design instead of shipping in their default state. */
@@ -137,7 +146,6 @@
   :focus-visible {
     outline: 2px solid var(--accent-ink);
     outline-offset: 2px;
-    border-radius: 1px;
   }
 
   ::selection {
@@ -145,8 +153,17 @@
     color: var(--accent-ink);
   }
 
-  /* Tabular figures for every number in the machine register, so iteration
-     ordinals and timings do not jitter between renders. */
+  /* <code> marks tool names, paths, and ids, but they are set in the page
+     face like everything else. Preflight makes code monospace; this undoes
+     it, and only an explicit `font-mono` (raw code) brings it back. */
+  code,
+  kbd,
+  samp {
+    font-family: inherit;
+  }
+
+  /* Tabular figures for ids, ordinals, and timings, so they line up and do
+     not jitter between renders. */
   code,
   kbd,
   pre,
@@ -172,6 +189,15 @@
 
   .disclosure[data-state="open"] {
     grid-template-rows: 1fr;
+  }
+
+  /* A closed panel leaves the focus order and the accessibility tree, but only
+     once it has collapsed, so the content does not vanish mid-motion. Opening
+     shows it at once. The trace's panels are also inert; the accordion's
+     (force-mounted by Radix) rely on this. Not a fourth motion: nothing moves. */
+  .disclosure[data-state="closed"] > * {
+    visibility: hidden;
+    transition: visibility 0s 180ms;
   }
 }
 

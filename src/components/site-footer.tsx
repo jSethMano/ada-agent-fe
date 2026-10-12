@@ -43,7 +43,7 @@ export function SiteFooter() {
               {STACK.map((entry) => (
                 <li key={entry.label} className="flex items-baseline justify-between gap-3">
                   <span className="text-[13px] text-ink-2">{entry.label}</span>
-                  <span className="font-mono text-[11px] whitespace-nowrap text-ink-3">
+                  <span className="text-[12px] whitespace-nowrap text-ink-3">
                     {entry.detail}
                   </span>
                 </li>
@@ -58,11 +58,11 @@ export function SiteFooter() {
             <dl className="mt-3 space-y-2.5 text-[13px]">
               <div>
                 <dt className="text-ink-2">Current model</dt>
-                <dd className="mt-0.5 font-mono text-[11px] break-all text-ink-3">{SITE.model}</dd>
+                <dd className="mt-0.5 text-[12px] break-all text-ink-3">{SITE.model}</dd>
               </div>
               <div>
                 <dt className="text-ink-2">Fallback</dt>
-                <dd className="mt-0.5 font-mono text-[11px] break-all text-ink-3">
+                <dd className="mt-0.5 text-[12px] break-all text-ink-3">
                   {SITE.previousModel}
                 </dd>
               </div>

@@ -59,7 +59,7 @@ submit ──► pending ──200 { answer }───────────�
 ## Copy in the console
 
 - Trace header labels are short, lowercase, and `whitespace-nowrap`: "ticket held", "answer replaced", "waiting for your approval".
-- Row names are mono and literal. A row the router didn't choose is prefixed with who acted: `jev.` for checks, `human.` for the visitor. It must never read as a tool call.
+- Row names are literal (in `<code>`, set in the page face). A row the router didn't choose is prefixed with who acted: `jev.` for checks, `human.` for the visitor. It must never read as a tool call.
 - Use `text-danger` only when the Worker acted (`blocked`, `held`, `replaced`), for a flagged answer, a security incident, or a failure. A skipped or failed check is muted, not danger: it never blocks.
 - State the real cause. No cat-speak. See the `chak-design` skill for everything visible.
 

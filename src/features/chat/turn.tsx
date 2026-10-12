@@ -39,7 +39,7 @@ interface ChakReplyProps {
 export function ChakReply({ thinking, pose, note, children }: ChakReplyProps) {
   return (
     <div className="min-w-0">
-      <p className="flex items-center gap-2 font-mono text-[11px] tracking-wide text-ink-3 select-none">
+      <p className="flex items-center gap-2 text-[12px] tracking-wide text-ink-3 select-none">
         <ChakSprite size={16} thinking={thinking} pose={pose} />
         chak
         {note && <span>· {note}</span>}
@@ -128,7 +128,7 @@ export function TurnView({ turn, onRetry, onDecide, deciding, busy }: TurnViewPr
                 failed
               />
             )}
-            <div className="mt-3 border-l-2 border-danger bg-danger-wash px-3 py-2.5">
+            <div className="mt-3 rounded-xl bg-danger-wash px-3.5 py-3">
               {/* His ears go back in the sprite above, so the box needs no sprite of its own. */}
               <div className="text-[13.5px] leading-relaxed text-danger">
                 {/* The plain-English line is ours; the Worker's own error stays
@@ -139,13 +139,13 @@ export function TurnView({ turn, onRetry, onDecide, deciding, busy }: TurnViewPr
                     Everything he tried is above.
                   </p>
                 )}
-                <p className={overran ? 'mt-1 font-mono text-[11.5px]' : undefined}>{turn.error}</p>
+                <p className={overran ? 'mt-1 text-[12.5px]' : undefined}>{turn.error}</p>
               </div>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => onRetry(turn.id)}
-                className="mt-2.5 font-mono text-[11.5px]"
+                className="mt-2.5 text-[12.5px]"
               >
                 <ArrowClockwiseIcon aria-hidden weight="bold" />
                 Retry this question

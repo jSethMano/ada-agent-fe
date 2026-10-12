@@ -1,5 +1,6 @@
 import { Fragment, useId, useState, type ReactNode } from 'react'
 import { CaretRightIcon } from '@phosphor-icons/react'
+import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import {
   isApproval,
@@ -83,7 +84,7 @@ function DisclosureRow({
         aria-controls={panelId}
         className="group grid w-full grid-cols-[1.5rem_1fr_auto] items-start gap-x-2 px-2.5 py-2.5 text-left transition-colors hover:bg-accent-wash sm:grid-cols-[1.75rem_1fr_auto] sm:gap-x-3 sm:px-3"
       >
-        <span className="pt-px font-mono text-[11px] tabular-nums text-ink-3">
+        <span className="pt-px text-[12px] tabular-nums text-ink-3">
           {String(ordinal).padStart(2, '0')}
         </span>
 
@@ -91,7 +92,7 @@ function DisclosureRow({
 
         <span className="flex items-start gap-2.5">
           {ms !== undefined && (
-            <span className="pt-px font-mono text-[11px] tabular-nums text-ink-3">
+            <span className="pt-px text-[12px] tabular-nums text-ink-3">
               {formatDuration(ms)}
             </span>
           )}
@@ -133,25 +134,25 @@ function ToolRow({ entry, ordinal }: { entry: ToolCallEntry; ordinal: number }) 
       summary={
         <>
           <span className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
-            <code className="font-mono text-[13px] font-medium text-ink">{entry.tool}</code>
+            <code className="text-[14px] font-medium text-ink">{entry.tool}</code>
             {/* Muted, not danger: the call ran. It is marked so a rescued call
                 never passes for one the model made. */}
             {entry.fromText && (
-              <code className="font-mono text-[11.5px] text-ink-3">parsed from text</code>
+              <code className="text-[12.5px] text-ink-3">parsed from text</code>
             )}
             {argPreview.map((pair) => (
-              <code key={pair} className="font-mono text-[11.5px] text-ink-3">
+              <code key={pair} className="text-[12.5px] text-ink-3">
                 {pair}
               </code>
             ))}
           </span>
           {resultPreview.length > 0 && (
             <span className="mt-1 flex flex-wrap items-baseline gap-x-2">
-              <span aria-hidden className="font-mono text-[11.5px] text-ink-3">
+              <span aria-hidden className="text-[12.5px] text-ink-3">
                 returned
               </span>
               {resultPreview.map((pair) => (
-                <code key={pair} className="font-mono text-[11.5px] text-ink-2">
+                <code key={pair} className="text-[12.5px] text-ink-2">
                   {pair}
                 </code>
               ))}
@@ -206,14 +207,14 @@ function AnswerLine({ answer }: { answer: CheckAnswer }) {
     // a Choice answer's label and confidence do not fit beside it on a 320px
     // phone. An empty note takes no line there, but keeps its column at `sm`.
     <span className="contents">
-      <code className="font-mono text-[11.5px] text-ink-3">{breakableId(answer.id)}</code>
-      <code className="font-mono text-[11.5px] text-ink-3">{answer.type}</code>
-      <code className={cn('font-mono text-[11.5px] tabular-nums', answer.flagged ? 'text-danger' : 'text-ink-2')}>
+      <code className="text-[12.5px] text-ink-3">{breakableId(answer.id)}</code>
+      <code className="text-[12.5px] text-ink-3">{answer.type}</code>
+      <code className={cn('text-[12.5px] tabular-nums', answer.flagged ? 'text-danger' : 'text-ink-2')}>
         {formatValue(answer.value)}
       </code>
       <code
         className={cn(
-          'font-mono text-[11.5px]',
+          'text-[12.5px]',
           tone,
           note ? 'col-start-3 sm:col-start-auto' : 'hidden sm:inline',
         )}
@@ -248,9 +249,9 @@ function CheckRow({ entry, ordinal }: { entry: CheckEntry; ordinal: number }) {
         <span className="flex flex-wrap items-baseline gap-x-2">
           {/* Breakable too: on a 320px phone `jev.triage_ticket` is wider than
               its column and ran into the timing beside it. */}
-          <code className="font-mono text-[13px] font-medium text-ink">jev.{breakableId(entry.check)}</code>
+          <code className="text-[14px] font-medium text-ink">jev.{breakableId(entry.check)}</code>
           {entry.action && (
-            <code className="font-mono text-[11.5px] font-medium text-danger">{entry.action}</code>
+            <code className="text-[12.5px] font-medium text-danger">{entry.action}</code>
           )}
         </span>
       }
@@ -264,7 +265,7 @@ function CheckRow({ entry, ordinal }: { entry: CheckEntry; ordinal: number }) {
             ))}
           </span>
         ) : (
-          <code className="mt-1 block font-mono text-[11.5px] text-ink-3">
+          <code className="mt-1 block text-[12.5px] text-ink-3">
             {entry.status} · {entry.reason ?? 'unknown'}
           </code>
         )
@@ -293,11 +294,11 @@ function ApprovalRow({ entry, ordinal }: { entry: ApprovalEntry; ordinal: number
       ms={entry.ms}
       summary={
         <span className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
-          <code className="font-mono text-[13px] font-medium text-ink">human.approval</code>
-          <code className="font-mono text-[11.5px] text-ink-2">{entry.decision}</code>
-          <code className="font-mono text-[11.5px] text-ink-3">{entry.tool}</code>
+          <code className="text-[14px] font-medium text-ink">human.approval</code>
+          <code className="text-[12.5px] text-ink-2">{entry.decision}</code>
+          <code className="text-[12.5px] text-ink-3">{entry.tool}</code>
           {editedFields.length > 0 && (
-            <code className="font-mono text-[11.5px] text-ink-3">edited {editedFields.join(', ')}</code>
+            <code className="text-[12.5px] text-ink-3">edited {editedFields.join(', ')}</code>
           )}
         </span>
       }
@@ -314,7 +315,7 @@ function ApprovalRow({ entry, ordinal }: { entry: ApprovalEntry; ordinal: number
 function Payload({ label, value }: { label: string; value: unknown }) {
   return (
     <div className="bg-paper px-3 py-2.5">
-      <p className="mb-1.5 font-mono text-[11px] tracking-wide text-ink-3">{label}</p>
+      <p className="mb-1.5 text-[12px] tracking-wide text-ink-3">{label}</p>
       {/* Phones wrap long strings instead of hiding them behind a sideways
           scroll. Same characters and indentation; only the line breaks differ. */}
       <pre className="overflow-x-auto font-mono text-[11.5px] leading-relaxed whitespace-pre-wrap text-ink-2 [overflow-wrap:anywhere] sm:whitespace-pre sm:[overflow-wrap:normal]">
@@ -322,6 +323,21 @@ function Payload({ label, value }: { label: string; value: unknown }) {
       </pre>
     </div>
   )
+}
+
+/** What a row's badge says: its name, and a word beside it when there is one.
+ *  `alarm` is the crimson badge: the Worker acted on the check, or one of its
+ *  judgments was flagged. A skipped or failed check is muted, never an alarm. */
+function badgeFor(entry: TraceEntry): { name: string; note?: string; alarm: boolean } {
+  if (isCheck(entry)) {
+    const name = `jev.${entry.check}`
+    if (entry.action) return { name, note: entry.action, alarm: true }
+    if (entry.status !== 'ok') return { name, note: entry.status, alarm: false }
+    if (entry.answers.some((answer) => answer.flagged)) return { name, note: 'flagged', alarm: true }
+    return { name, alarm: false }
+  }
+  if (isApproval(entry)) return { name: 'human.approval', note: entry.decision, alarm: false }
+  return { name: entry.tool, note: entry.fromText ? 'parsed from text' : undefined, alarm: false }
 }
 
 interface TraceProps {
@@ -361,6 +377,12 @@ interface TraceProps {
  * the turn, and the whole trace comes back together.
  */
 export function Trace({ trace, iterations, elapsedMs, failed, approval }: TraceProps) {
+  // One row open at a time, so the reply stays short. `shown` outlives `open`
+  // so a closing panel collapses on its content instead of going blank first.
+  const [open, setOpen] = useState<number | null>(null)
+  const [shown, setShown] = useState<number | null>(null)
+  const panelId = useId()
+
   const multiPass = (iterations ?? 1) > 1
   const toolCount = trace.filter(isToolCall).length
   const checkCount = trace.filter(isCheck).length
@@ -370,23 +392,24 @@ export function Trace({ trace, iterations, elapsedMs, failed, approval }: TraceP
 
   if (trace.length === 0 && !failed) {
     return (
-      <div className="mt-3 border-l-2 border-rule pl-3">
-        <p className="font-mono text-[11.5px] text-ink-3">
-          answered directly, no tools called
-          {iterations ? ` · ${iterations} iteration` : ''}
-          {elapsedMs !== undefined ? ` in ${formatDuration(elapsedMs)}` : ''}
-        </p>
-      </div>
+      <p className="mt-3 text-[12.5px] text-ink-3">
+        answered directly, no tools called
+        {iterations ? ` · ${iterations} iteration` : ''}
+        {elapsedMs !== undefined ? ` in ${formatDuration(elapsedMs)}` : ''}
+      </p>
     )
   }
 
+  const toggle = (index: number) => {
+    setOpen((current) => (current === index ? null : index))
+    setShown(index)
+  }
+  const shownEntry = shown === null ? undefined : trace[shown]
+
   return (
-    <section
-      aria-label="Trace"
-      className={cn('mt-3 border-l-2', failed ? 'border-danger' : 'border-rule-strong')}
-    >
-      <header className="flex flex-wrap items-baseline gap-x-5 gap-y-1 pb-2 pl-2 sm:pl-3">
-        <span className="font-mono text-[11px] tracking-wide text-ink-3">router loop</span>
+    <section aria-label="Trace" className="mt-3">
+      <header className="flex flex-wrap items-baseline gap-x-4 gap-y-1 text-[13px]">
+        <span className="text-[12px] tracking-wide text-ink-3">router loop</span>
         {iterations !== undefined && (
           <Stat
             value={String(iterations)}
@@ -416,21 +439,59 @@ export function Trace({ trace, iterations, elapsedMs, failed, approval }: TraceP
         {elapsedMs !== undefined && <Stat value={formatDuration(elapsedMs)} label="roundtrip" />}
       </header>
 
-      <div className="ml-2 border border-rule bg-surface sm:ml-3">
-        {trace.map((entry, index) =>
-          isCheck(entry) ? (
-            <CheckRow key={`check-${index}`} entry={entry} ordinal={index + 1} />
-          ) : isApproval(entry) ? (
-            <ApprovalRow key={`approval-${index}`} entry={entry} ordinal={index + 1} />
-          ) : (
-            <ToolRow key={`tool-${index}`} entry={entry} ordinal={index + 1} />
-          ),
-        )}
-        {failed && toolCount === 0 && (
-          <p className="border-t border-rule px-3 py-2.5 font-mono text-[11.5px] text-ink-3 first:border-t-0">
-            no tool calls recorded before the loop stopped
-          </p>
-        )}
+      {/* Every call stays visible as a badge, in the order it ran; its detail
+          opens underneath on demand. A row the Worker acted on, or with a
+          flagged judgment, is crimson and says why, so nothing that matters
+          hides behind a click. */}
+      <ul className="mt-2 flex flex-wrap gap-1.5">
+        {trace.map((entry, index) => {
+          const badge = badgeFor(entry)
+          const isOpen = open === index
+          return (
+            <li key={index}>
+              <Badge asChild variant={isOpen ? 'default' : badge.alarm ? 'destructive' : 'outline'}>
+                <button
+                  type="button"
+                  onClick={() => toggle(index)}
+                  aria-expanded={isOpen}
+                  aria-controls={panelId}
+                  className="h-6 cursor-pointer gap-1.5 px-2.5 text-[12.5px] font-normal outline-none active:translate-y-px pointer-coarse:h-11 pointer-coarse:px-4"
+                >
+                  <span className="font-medium">{badge.name}</span>
+                  {badge.note && (
+                    <span className={cn(!isOpen && !badge.alarm && 'text-ink-3')}>{badge.note}</span>
+                  )}
+                </button>
+              </Badge>
+            </li>
+          )
+        })}
+      </ul>
+
+      {failed && toolCount === 0 && (
+        <p className="mt-2 text-[12.5px] text-ink-3">no tool calls recorded before the loop stopped</p>
+      )}
+
+      <div className="disclosure" data-state={open !== null ? 'open' : 'closed'}>
+        <div>
+          {/* inert keeps a closed panel out of the focus order and the
+              accessibility tree while the grid row animates to 0fr. */}
+          <div
+            id={panelId}
+            inert={open === null}
+            className="mt-2 overflow-hidden rounded-xl border border-rule bg-surface"
+          >
+            {shownEntry !== undefined && shown !== null && (
+              isCheck(shownEntry) ? (
+                <CheckRow entry={shownEntry} ordinal={shown + 1} />
+              ) : isApproval(shownEntry) ? (
+                <ApprovalRow entry={shownEntry} ordinal={shown + 1} />
+              ) : (
+                <ToolRow entry={shownEntry} ordinal={shown + 1} />
+              )
+            )}
+          </div>
+        </div>
       </div>
     </section>
   )

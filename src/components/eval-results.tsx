@@ -7,6 +7,7 @@ import { ChakReply, VisitorMessage } from '@/features/chat/turn'
 import { EVALS, FEATURED_COPY, percent, type EvalRequest, type EvalRun, type EvalSide, type EvalStep } from '@/lib/evals'
 import { PUBLISHED_REPOS } from '@/lib/site'
 import { cn } from '@/lib/utils'
+import { Highlight } from '@/components/highlight'
 
 const CATEGORY_LABEL: Record<string, string> = {
   normal_it: 'normal IT',
@@ -49,8 +50,8 @@ function ResultsTable() {
               scope="col"
               className={cn('py-2 pl-3 text-right align-bottom font-normal', between(index, runs.length))}
             >
-              <span className="block font-mono text-[12px] text-ink">{run.label}</span>
-              <span className="block font-mono text-[11px] text-ink-3">
+              <span className="block text-[13px] text-ink">{run.label}</span>
+              <span className="block text-[12px] text-ink-3">
                 {runDate(run)} · {run.commit}
               </span>
             </th>
@@ -78,16 +79,16 @@ function ResultsTable() {
                 return (
                   <td
                     key={run.file}
-                    className={cn('py-2.5 pl-3 text-right align-top font-mono', between(index, runs.length))}
+                    className={cn('py-2.5 pl-3 text-right align-top tabular-nums', between(index, runs.length))}
                   >
                     {tally ? (
                       <>
                         <span className="block text-[13px] text-ink">{percent(tally)}</span>
-                        <span className="block text-[11px] text-ink-3">
+                        <span className="block text-[12px] text-ink-3">
                           {tally.passed}/{tally.graded}
                         </span>
                         {tally.ungraded > 0 && (
-                          <span className="block text-[11px] text-ink-3">{tally.ungraded} ungraded</span>
+                          <span className="block text-[12px] text-ink-3">{tally.ungraded} ungraded</span>
                         )}
                       </>
                     ) : (
@@ -108,20 +109,20 @@ function ResultsTable() {
  *  visitor pressed is the next "you" row, the same order it happened in. */
 function CardSnapshot({ approval, ended }: { approval: NonNullable<EvalStep['approval']>; ended: boolean }) {
   return (
-    <div className="mt-3 max-w-[68ch] border border-rule-strong bg-paper px-3 py-3 sm:px-4">
+    <div className="mt-3 max-w-[68ch] rounded-xl border border-rule-strong bg-paper px-3.5 py-3 sm:px-4">
       <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
         <p className="text-[14px] font-medium text-ink">File this ticket?</p>
-        <code className="font-mono text-[11px] text-ink-3">approval card</code>
+        <code className="text-[12px] text-ink-3">approval card</code>
       </div>
       {approval.notice && <Notice text={approval.notice} />}
       <dl className="mt-3 space-y-2.5">
         <div>
-          <dt className="font-mono text-[11px] text-ink-3">title</dt>
+          <dt className="text-[12px] text-ink-3">title</dt>
           <dd className="mt-0.5 text-[15px] leading-snug text-ink [overflow-wrap:anywhere]">{approval.args.title}</dd>
         </div>
         {approval.args.description && (
           <div>
-            <dt className="font-mono text-[11px] text-ink-3">description</dt>
+            <dt className="text-[12px] text-ink-3">description</dt>
             <dd className="mt-0.5 text-[14px] leading-relaxed whitespace-pre-wrap text-ink-2 [overflow-wrap:anywhere]">
               {approval.args.description}
             </dd>
@@ -154,21 +155,22 @@ function DecisionView({ request }: { request: Extract<EvalRequest, { kind: 'deci
       <p className="flex flex-wrap items-center justify-end gap-x-2.5 gap-y-1">
         <span className="sr-only">You: </span>
         <span
+          // Drawn in the card's own colours: green for File ticket, red for Don't file.
           className={cn(
-            'inline-flex h-7 items-center gap-1 rounded-sm border bg-paper px-2.5 font-mono text-[11.5px] text-ink',
-            approved ? 'border-ink' : 'border-rule',
+            'inline-flex h-7 items-center gap-1 rounded-md px-2.5 text-[12.5px]',
+            approved ? 'bg-success text-success-foreground' : 'bg-danger-wash text-danger',
           )}
         >
           <Icon aria-hidden weight="bold" className="size-3.5" />
           {approved ? 'File ticket' : 'Don’t file'}
         </span>
-        <span className="font-mono text-[11px] text-ink-3">
+        <span className="text-[12px] text-ink-3">
           pressed on the card{edited.length > 0 ? ` · edited ${edited.join(', ')}` : ''}
         </span>
       </p>
       {edited.map((field) => (
         <p key={field} className="mt-1.5 max-w-[68ch] text-right text-[14px] leading-relaxed text-ink-2 [overflow-wrap:anywhere]">
-          <span className="mr-2 font-mono text-[11px] text-ink-3">{field}</span>
+          <span className="mr-2 text-[12px] text-ink-3">{field}</span>
           {edits[field]}
         </p>
       ))}
@@ -201,7 +203,7 @@ function ReplayStep({ step, first, last }: { step: EvalStep; first: boolean; las
         {step.answer !== undefined && <Answer text={step.answer} />}
         {step.notice && <Notice text={step.notice} />}
         {failed && step.error && (
-          <p className="mt-3 border-l-2 border-danger bg-danger-wash px-3 py-2.5 font-mono text-[11.5px] leading-relaxed text-danger [overflow-wrap:anywhere]">
+          <p className="mt-3 rounded-xl bg-danger-wash px-3.5 py-3 text-[12.5px] leading-relaxed text-danger [overflow-wrap:anywhere]">
             {step.status} · {step.error}
           </p>
         )}
@@ -215,21 +217,21 @@ function ReplayStep({ step, first, last }: { step: EvalStep; first: boolean; las
 function ReplayConsole({ kind, side }: { kind: 'before' | 'after'; side: EvalSide }) {
   const passed = side.status === 'pass'
   return (
-    <div className="flex min-w-0 flex-col border border-rule bg-surface">
+    <div className="flex min-w-0 flex-col overflow-hidden rounded-2xl border border-rule bg-surface">
       <header className="border-b border-rule px-4 py-2.5 sm:px-6">
         <p className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5">
           <span className="flex flex-wrap items-baseline gap-x-2">
-            <span className="font-mono text-[11px] text-ink-3">{kind}</span>
-            <code className="font-mono text-[12px] text-ink-2">
+            <span className="text-[12px] text-ink-3">{kind}</span>
+            <code className="text-[13px] text-ink-2">
               {side.label} · run {side.rep}
             </code>
           </span>
-          <span className={cn('font-mono text-[12px]', passed ? 'text-ink' : 'text-danger')}>
+          <span className={cn('text-[13px]', passed ? 'text-ink' : 'text-danger')}>
             {STATUS_WORD[side.status] ?? side.status}
           </span>
         </p>
         {/* The run shown is one of several, so say how the case did across all of them. */}
-        <p className="mt-0.5 font-mono text-[11px] text-ink-3">
+        <p className="mt-0.5 text-[12px] text-ink-3">
           {side.caseRuns.passed} of {side.caseRuns.total} {side.caseRuns.total === 1 ? 'run' : 'runs'} passed in{' '}
           {side.label}
         </p>
@@ -248,7 +250,7 @@ function ReplayConsole({ kind, side }: { kind: 'before' | 'after'; side: EvalSid
           {side.failedChecks.map((check) => (
             <li
               key={`${check.step}-${check.name}`}
-              className="font-mono text-[11.5px] leading-relaxed text-danger [overflow-wrap:anywhere]"
+              className="text-[12.5px] leading-relaxed text-danger [overflow-wrap:anywhere]"
             >
               failed · step {check.step} · {check.name}
               {check.detail ? `: ${check.detail}` : ''}
@@ -260,15 +262,12 @@ function ReplayConsole({ kind, side }: { kind: 'before' | 'after'; side: EvalSid
       {/* Where the live composer sits. Drawn, not built: there is no field to
           focus and no button to press, so nothing here invites typing. */}
       <div className="border-t border-rule px-4 py-3 sm:px-6">
-        <div className="grid grid-cols-[1fr_auto] items-center gap-3">
-          <p className="flex min-h-9 items-center rounded-sm border border-rule bg-paper px-2.5 text-[14px] text-ink-3">
-            Replay of a recorded run
-          </p>
+        <div className="flex items-center gap-3 rounded-3xl border border-rule bg-paper py-1.5 pr-1.5 pl-5">
+          <p className="flex-1 text-[14px] text-ink-3">Replay of a recorded run</p>
           <span
             aria-hidden
-            className="inline-flex h-9 items-center gap-1.5 rounded-sm bg-primary px-3 text-sm font-medium text-primary-foreground opacity-50"
+            className="inline-flex size-9 items-center justify-center rounded-full bg-primary text-primary-foreground opacity-50"
           >
-            Send
             <ArrowUpIcon weight="bold" className="size-4" />
           </span>
         </div>
@@ -291,8 +290,8 @@ export function EvalResults() {
   return (
     <section aria-labelledby="evals-heading" className="border-t border-rule">
       <div className="mx-auto max-w-[1240px] px-5 py-16 sm:px-8 lg:py-24">
-        <h2 id="evals-heading" className="text-[30px] leading-[1.15] font-semibold tracking-tight text-ink sm:text-[36px]">
-          How he's measured
+        <h2 id="evals-heading" className="text-[30px] leading-[1.15] font-semibold tracking-tight sm:text-[36px]">
+          <Highlight>How he's measured</Highlight>
         </h2>
         <p className="mt-4 max-w-[62ch] text-[17px] leading-[1.65] text-ink-2">
           Each change to Chak is run against {method.cases} written cases, {method.liveReps} times each,
@@ -300,11 +299,11 @@ export function EvalResults() {
           traces are exported from the saved runs.
         </p>
 
-        <p className="mt-5 font-mono text-[11.5px] leading-relaxed text-ink-3">
+        <p className="mt-5 text-[12.5px] leading-relaxed text-ink-3">
           {method.cases} cases · {method.steps} steps · {method.liveReps} runs per live case · judge{' '}
           {method.judge.model} v{method.judge.version}, ungraded below {method.judge.floor}
         </p>
-        <p className="mt-1 font-mono text-[11.5px] leading-relaxed text-ink-3">
+        <p className="mt-1 text-[12.5px] leading-relaxed text-ink-3">
           {method.categories.map((category) => `${CATEGORY_LABEL[category.id] ?? category.id} ${category.cases}`).join(' · ')}
         </p>
 
@@ -360,7 +359,7 @@ export function EvalResults() {
                   {copy.title}
                 </h4>
                 <p className="mt-2 max-w-[68ch] text-[14px] leading-relaxed text-ink-2">{copy.caption}</p>
-                <p className="mt-2 font-mono text-[11px] text-ink-3">
+                <p className="mt-2 text-[12px] text-ink-3">
                   {item.caseId} · {CATEGORY_LABEL[item.category] ?? item.category}
                 </p>
                 <div className="mt-4 grid grid-cols-1 gap-x-8 gap-y-8 lg:grid-cols-2">

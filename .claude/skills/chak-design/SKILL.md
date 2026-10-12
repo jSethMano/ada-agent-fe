@@ -1,6 +1,6 @@
 ---
 name: chak-design
-description: Keep UI work inside this page's locked design system. One light theme; two type registers (Geist for prose and interface, Geist Mono for the machine record); one accent with four jobs; a 2px radius everywhere; a budget of three motions; the phone rules (the page scrolls, 44px touch targets, 16px inputs, an 11px floor, no overflow at 320px); and Chak's character rules (sprite sizes, no cat-speak). Includes a review checklist with greps. Use before adding or restyling any component, copy, or CSS, and when reviewing a UI diff.
+description: Keep UI work inside this page's locked design system. One light theme; one type face (Geist everywhere, Geist Mono for raw code only); one accent with five jobs; soft corners on one radius scale; a budget of three motions; the phone rules (the page scrolls, 44px touch targets, 16px inputs, a 12px floor, no overflow at 320px); and Chak's character rules (sprite sizes, no cat-speak). Includes a review checklist with greps. Use before adding or restyling any component, copy, or CSS, and when reviewing a UI diff.
 argument-hint: "[component or diff to build or review]"
 ---
 
@@ -20,7 +20,8 @@ Every piece of text is in exactly one register. The font says whether a person o
 | --- | --- | --- | --- |
 | Headlines, subheads, ledes, the builder's note, small lowercase section kickers outside the trace | Prose | default (Geist sans) | h1/h2 `font-semibold tracking-tight`; subheads 18 to 22px `font-medium`; kickers `text-[12px] font-medium tracking-wide text-ink-3` |
 | Nav, buttons, labels, form fields, both sides of the chat | Interface | default (Geist sans) | Chat bubbles are 15px on both sides. Emphasis in answers is `font-semibold` |
-| Instance path, tool names, JSON, ordinals, timings, trace labels, triage facts | Machine record | `font-mono` | Tabular figures come from `index.css`. Size `text-[11px]` to `text-[13px]`, never under 11px |
+| Instance path, tool names, badges, ordinals, timings, trace labels, triage facts | Record | default (Geist sans), often on `<code>` | Same face as everything else (`index.css` sets `code` to inherit). Tabular figures come from `index.css`. Size `text-[12px]` to `text-[14px]`, never under 12px |
+| Raw JSON payloads, inline code in answers | Code | `font-mono` | The only monospace on the page |
 
 There is no third face. Geist Pixel was dropped on 2026-10-11 at the user's request; don't bring back `font-pixel`. The sprite is still pixel art.
 
@@ -28,17 +29,17 @@ Character lives in the chrome, never in the record. Trace rows, JSON, tool names
 
 ## 2. Colour
 
-Use tokens only: `paper`, `surface`, `ink`, `ink-2`, `ink-3`, `rule`, `rule-strong`, `accent-ink`, `accent-wash`, `danger`, `danger-wash`. Never put a hex value in a component. The sprite frames are the one exception.
+Use tokens only: `paper`, `surface`, `ink`, `ink-2`, `ink-3`, `rule`, `rule-strong`, `accent-ink`, `accent-wash`, `danger`, `danger-wash`, `success`. Never put a hex value in a component. The sprite frames are the one exception.
 
-- **Marmalade (`accent-ink`, #A84A0C) has four jobs:** links, the Send button, the active-iteration marker (the pass count when more than one pass ran), and focus rings. Anything else that wants emphasis uses ink and weight. The approval card's "File ticket" is an outline button with an ink border, not an accent button. The visitor's chat bubble is ink: `Bubble`'s `default` variant is re-tokenized so it can never be marmalade.
+- **Marmalade (`accent-ink`, #A84A0C) has five jobs:** links, the Send button, the active-iteration marker (the pass count when more than one pass ran), focus rings, and section titles (`<Highlight>`: marmalade on `accent-wash`, on the section `h2`s and the hero `h1` only, never subheads or kickers). Anything else that wants emphasis uses ink and weight. The approval card's buttons are semantic instead: "File ticket" green (`success`, the one green, for that action only), "Edit" outline, "Don't file" the soft `destructive` variant. The visitor's chat bubble is ink: `Bubble`'s `default` variant is re-tokenized so it can never be marmalade.
 - **Crimson (`danger`, #A3123A) means something went wrong or the Worker acted:** failures, `blocked`, `held`, `replaced`, a flagged answer, a security incident. It is never decoration. A flag always carries a word ("flagged", "security incident") as well as the colour.
 - **Bright fur orange (#E8772E) is 2.7:1** and lives only in the sprite. It never carries text or a control.
 
 ## 3. Shape, theme, and motion
 
-- **Every radius is 2px.** All shadcn radius tokens alias `--radius`, so `rounded-lg` is 2px too. Nothing is a pill: no `rounded-full`.
+- **Soft corners, one scale** (since 2026-10-12; it was 2px). `--radius` is 10px and the shadcn tokens scale off it: `sm` 6, `md` 8, `lg` 10 for buttons and inputs, `xl` 14 for cards, bubbles and the trace panel, `2xl` 18 for frames, `3xl` 22 for the composer, `4xl` 26 for badges (pills). `rounded-full` is for the round send button only. Every bordered box gets a radius; no hard `border-l-2` stripes.
 - **One light theme.** `@custom-variant dark` in `index.css` makes `dark:` class-driven, and `.dark` is never set. Don't remove the variant, don't add a theme toggle, and don't expect a `dark:` utility to do anything.
-- **Three motions, no more:** the trace disclosure (`.disclosure`, `grid-template-rows` 0fr→1fr), the in-flight `.chak-think` sprite loop (the page's only `@keyframes`), and button press feedback (`translate-y-px`). Hover colour changes are fine. Anything that moves, grows, or fades in over time has to be one of the three. No animation library. The composer's move from the middle of the hero to the bottom is instant on purpose. `prefers-reduced-motion` collapses everything through the global rule in `index.css`.
+- **Three motions, no more:** the disclosure (`.disclosure`, `grid-template-rows` 0fr→1fr; trace panels and the capabilities accordion, which skips shadcn's accordion keyframes), the in-flight `.chak-think` sprite loop (the page's only `@keyframes`), and button press feedback (`translate-y-px`). Hover colour changes are fine. Anything that moves, grows, or fades in over time has to be one of the three. No animation library. The composer's move from the middle of the hero to the bottom is instant on purpose. `prefers-reduced-motion` collapses everything through the global rule in `index.css`.
 
 ## 4. Layout
 
@@ -55,7 +56,7 @@ Use tokens only: `paper`, `surface`, `ink`, `ink-2`, `ink-3`, `rule`, `rule-stro
 | Touch targets are 44px | `pointer-coarse:min-h-11` / `h-11`. When the visible size must not change, add padding and a matching negative margin |
 | Touch-only behavior uses `pointer-coarse:` | So desktop is untouched: the always-visible History delete, the hidden "Shift + Enter" hint |
 | Inputs are 16px below `sm` | `text-base sm:text-[15px]`. Otherwise iOS Safari zooms on focus. Textareas get `enterKeyHint="send"` |
-| Machine text floor is 11px | Never 10.5px |
+| Small-text floor is 12px | Raw code may be 11.5px mono; nothing else under 12px |
 | Nothing widens the page | Grids are `grid-cols-1` (`minmax(0,1fr)`) below `lg`, so wide content overflows its own box. Long ids get break opportunities (`breakableId()` in `trace.tsx`). Re-check 320px after adding any `whitespace-nowrap` |
 | Phone navigation | Capabilities and Source. Architecture and Status join at `sm` |
 

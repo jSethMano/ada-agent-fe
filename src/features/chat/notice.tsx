@@ -5,7 +5,7 @@ export function Notice({ text }: { text: string }) {
   return (
     <p
       role="note"
-      className="mt-3 max-w-[68ch] border-l-2 border-danger pl-3 text-[13.5px] leading-relaxed text-danger"
+      className="mt-3 max-w-[68ch] rounded-lg bg-danger-wash px-3 py-2 text-[13.5px] leading-relaxed text-danger"
     >
       {text}
     </p>

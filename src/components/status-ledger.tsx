@@ -1,3 +1,5 @@
+import { Highlight } from "@/components/highlight";
+
 interface Group {
   label: string;
   items: string[];
@@ -52,9 +54,9 @@ export function StatusLedger() {
       <div className="mx-auto max-w-[1240px] px-5 py-16 sm:px-8 lg:py-24">
         <h2
           id="status-heading"
-          className="text-[30px] leading-[1.15] font-semibold tracking-tight text-ink sm:text-[36px]"
+          className="text-[30px] leading-[1.15] font-semibold tracking-tight sm:text-[36px]"
         >
-          Where it stands
+          <Highlight>Where it stands</Highlight>
         </h2>
 
         <div className="mt-10 grid gap-x-10 gap-y-10 lg:grid-cols-3">

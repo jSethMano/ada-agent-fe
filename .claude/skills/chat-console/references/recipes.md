@@ -20,8 +20,8 @@ Example: the Worker adds `{ kind: 'handoff', to, reason, ms }`.
 
 1. **`types.ts`**: add the interface and its member of the `TraceEntry` union, plus an `isHandoff()` guard next to `isCheck()`. Make every field the row can render without optional. Use `string` for anything that names a value the Worker may add to later. Update the union's doc comment with where the row sits in the turn.
 2. **`client.ts`**: add a branch to `isTraceEntry()` for the new `kind`, checking only the fields the row can't render without. Without this branch, every row of this kind is dropped.
-3. **`trace.tsx`**: add a `HandoffRow` built on `DisclosureRow` (`ordinal`, `ms`, `summary`, `panes`). The name is `font-mono text-[13px] font-medium text-ink`, prefixed by who acted unless it's a tool call. Previews are `text-[11.5px]`. The panes show the raw entry fields through `Payload`, unmodified.
-4. **`Trace`**: add the kind to the dispatch in the `trace.map`. Decide whether the header counts it. `isToolCall()` already excludes it, because only `kind` `'tool'` or no `kind` counts as a tool call. Add a header label only if visitors should notice the row at a glance.
+3. **`trace.tsx`**: add a `HandoffRow` built on `DisclosureRow` (`ordinal`, `ms`, `summary`, `panes`). The name is `<code className="text-[14px] font-medium text-ink">`, prefixed by who acted unless it's a tool call. Previews are `text-[12.5px]`. The panes show the raw entry fields through `Payload`, unmodified.
+4. **`Trace`**: give the kind a badge in `badgeFor()` (its name, a word beside it if it has one, and whether it is an alarm), and add it to the panel dispatch that renders the open row. Decide whether the header counts it. `isToolCall()` already excludes it, because only `kind` `'tool'` or no `kind` counts as a tool call. Add a header label only if visitors should notice the row at a glance.
 5. **`CLAUDE.md`**: the `trace[]` paragraph, and the wire contract table if the response changed.
 6. **Deploy order**: the front end ships before the Worker starts sending the row (see the `worker-sync` skill).
 
@@ -46,7 +46,7 @@ Work is needed only when:
 
 ## A new approval field or outcome
 
-- **A field on the card** (from `approvalView()` in the Worker): add it to `PendingApproval`, optional unless the card can't render without it. Add it to `isPendingApproval()` only if it's required. Render it in `TriageLine` if it's a triage fact, in mono `text-[11.5px]`, with danger ink only for a flag.
+- **A field on the card** (from `approvalView()` in the Worker): add it to `PendingApproval`, optional unless the card can't render without it. Add it to `isPendingApproval()` only if it's required. Render it in `TriageLine` if it's a triage fact, in `text-[12.5px]` (page face), with danger ink only for a flag.
 - **A new decision value** (beyond `approve` / `cancel`): `ApprovalDecision['action']`, the buttons in `ApprovalCard`, and `deciding` in `use-ask.ts`, which tells the card which button shows progress. The `ApprovalRow` header renders any `decision` string.
 - **A new closed reason**: `Turn.approvalClosed`, and its sentence in the card's closed state.
 - **Edited-ticket limits** come from `TICKET_LIMITS` in the Worker and are copied into `TITLE_MAX` and `DESCRIPTION_MAX` in `approval-card.tsx`.

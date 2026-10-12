@@ -31,7 +31,7 @@ function renderInline(text: string, keyPrefix: string): ReactNode[] {
 
     if (token.startsWith('`') && token.endsWith('`')) {
       return (
-        <code key={key} className="bg-paper px-1 py-0.5 font-mono text-[0.85em] text-ink">
+        <code key={key} className="rounded-sm bg-paper px-1 py-0.5 font-mono text-[0.85em] text-ink">
           {token.slice(1, -1)}
         </code>
       )

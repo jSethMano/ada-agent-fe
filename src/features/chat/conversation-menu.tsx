@@ -37,7 +37,7 @@ export function ConversationMenu({
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="outline" size="sm" className="font-mono text-[11.5px] pointer-coarse:h-11">
+        <Button variant="outline" size="sm" className="text-[12.5px] pointer-coarse:h-11">
           <ClockCounterClockwiseIcon aria-hidden weight="bold" />
           History
           {history.length > 0 && (
@@ -85,7 +85,7 @@ export function ConversationMenu({
                     >
                       {conversationTitle(conversation)}
                     </span>
-                    <span className="mt-1 flex items-baseline gap-2 font-mono text-[11px] text-ink-3">
+                    <span className="mt-1 flex items-baseline gap-2 text-[12px] text-ink-3">
                       <span className="truncate">{conversation.instance}</span>
                       <span className="whitespace-nowrap">
                         {conversation.turns.length}{' '}
@@ -116,7 +116,7 @@ export function ConversationMenu({
           </ul>
         )}
 
-        <p className="border-t border-rule px-3 py-2 text-[11.5px] leading-relaxed text-ink-3">
+        <p className="border-t border-rule px-3 py-2 text-[12.5px] leading-relaxed text-ink-3">
           Transcripts are stored in this browser. Chak's own memory lives in the Durable Object named
           by each instance.
         </p>

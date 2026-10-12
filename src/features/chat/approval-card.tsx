@@ -13,9 +13,9 @@ const DESCRIPTION_MAX = 4000
 
 /** 16px below sm, or iOS Safari zooms the page when the field takes focus. */
 const FIELD =
-  'w-full rounded-lg border border-rule bg-paper px-2.5 py-2 text-base leading-relaxed text-ink outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50 sm:text-[15px]'
+  'w-full rounded-lg border border-rule bg-surface px-2.5 py-2 text-base leading-relaxed text-ink outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50 sm:text-[15px]'
 
-const ACTION = 'font-mono text-[11.5px] pointer-coarse:h-11'
+const ACTION = 'text-[12.5px] pointer-coarse:h-11'
 
 /** The machine facts under the ticket: what triage made of it before anyone
  *  decided. Priority is set in code from Jev's judgments. The eval replays
@@ -35,7 +35,7 @@ export function TriageLine({ approval }: { approval: Pick<PendingApproval, 'prio
       {facts.map((fact) => (
         <code
           key={fact.text}
-          className={cn('font-mono text-[11.5px]', fact.flagged ? 'text-danger' : 'text-ink-3')}
+          className={cn('text-[12.5px]', fact.flagged ? 'text-danger' : 'text-ink-3')}
         >
           {fact.text}
         </code>
@@ -69,8 +69,8 @@ export function ApprovalCard({ turn, deciding, busy, onDecide }: ApprovalCardPro
 
   if (approvalClosed) {
     return (
-      <div className="mt-3 max-w-[68ch] border-l-2 border-rule pl-3">
-        <p className="font-mono text-[11.5px] text-ink-3">not filed · {approval.args.title}</p>
+      <div className="mt-3 max-w-[68ch] rounded-xl border border-rule px-3.5 py-2.5">
+        <p className="text-[12.5px] text-ink-3">not filed · {approval.args.title}</p>
         <p className="mt-1 text-[13.5px] leading-relaxed text-ink-2">
           {approvalClosed === 'dropped'
             ? 'You sent a new message instead, so this ticket was dropped.'
@@ -100,13 +100,13 @@ export function ApprovalCard({ turn, deciding, busy, onDecide }: ApprovalCardPro
   return (
     <section
       aria-labelledby={headingId}
-      className="mt-3 max-w-[68ch] border border-rule-strong bg-paper px-3 py-3 sm:px-4"
+      className="mt-3 max-w-[68ch] rounded-xl border border-rule-strong bg-paper px-3.5 py-3 sm:px-4"
     >
       <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
         <h3 id={headingId} className="text-[14px] font-medium text-ink">
           File this ticket?
         </h3>
-        <code className="font-mono text-[11px] text-ink-3">waiting for you · {approval.tool}</code>
+        <code className="text-[12px] text-ink-3">waiting for you · {approval.tool}</code>
       </div>
 
       {approval.notice && <Notice text={approval.notice} />}
@@ -114,7 +114,7 @@ export function ApprovalCard({ turn, deciding, busy, onDecide }: ApprovalCardPro
       {editing ? (
         <div className="mt-3 space-y-3">
           <div>
-            <label htmlFor={titleId} className="mb-1 block font-mono text-[11px] text-ink-3">
+            <label htmlFor={titleId} className="mb-1 block text-[12px] text-ink-3">
               title
             </label>
             <input
@@ -127,7 +127,7 @@ export function ApprovalCard({ turn, deciding, busy, onDecide }: ApprovalCardPro
             />
           </div>
           <div>
-            <label htmlFor={descriptionId} className="mb-1 block font-mono text-[11px] text-ink-3">
+            <label htmlFor={descriptionId} className="mb-1 block text-[12px] text-ink-3">
               description
             </label>
             <Textarea
@@ -146,12 +146,12 @@ export function ApprovalCard({ turn, deciding, busy, onDecide }: ApprovalCardPro
       ) : (
         <dl className="mt-3 space-y-2.5">
           <div>
-            <dt className="font-mono text-[11px] text-ink-3">title</dt>
+            <dt className="text-[12px] text-ink-3">title</dt>
             <dd className="mt-0.5 text-[15px] leading-snug text-ink">{approval.args.title}</dd>
           </div>
           {approval.args.description && (
             <div>
-              <dt className="font-mono text-[11px] text-ink-3">description</dt>
+              <dt className="text-[12px] text-ink-3">description</dt>
               <dd className="mt-0.5 text-[14px] leading-relaxed whitespace-pre-wrap text-ink-2">
                 {approval.args.description}
               </dd>
@@ -165,13 +165,14 @@ export function ApprovalCard({ turn, deciding, busy, onDecide }: ApprovalCardPro
       </div>
 
       <div className="mt-3 flex flex-wrap gap-2">
-        {/* Ink, not the accent: marmalade's jobs are fixed, and this is not one. */}
+        {/* Semantic, not the accent: green files, outline edits, red declines.
+            Marmalade's jobs are fixed, and none of these is one. */}
         <Button
-          variant="outline"
+          variant="success"
           size="sm"
           onClick={approve}
           disabled={locked || trimmedTitle.length === 0}
-          className={cn(ACTION, 'border-ink text-ink')}
+          className={ACTION}
         >
           <CheckIcon aria-hidden weight="bold" />
           File ticket
@@ -187,7 +188,7 @@ export function ApprovalCard({ turn, deciding, busy, onDecide }: ApprovalCardPro
           </Button>
         )}
         <Button
-          variant="outline"
+          variant="destructive"
           size="sm"
           onClick={() => onDecide({ action: 'cancel' })}
           disabled={locked}
@@ -201,7 +202,7 @@ export function ApprovalCard({ turn, deciding, busy, onDecide }: ApprovalCardPro
       {deciding ? (
         <div role="status" className="mt-2.5 flex items-center gap-2">
           <ChakSprite thinking size={16} />
-          <span className="font-mono text-[11.5px] text-ink-3">
+          <span className="text-[12.5px] text-ink-3">
             {deciding === 'approve' ? 'filing' : 'not filing'}
           </span>
         </div>

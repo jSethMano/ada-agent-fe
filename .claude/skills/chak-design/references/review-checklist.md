@@ -7,8 +7,9 @@ Run from the repo root. Each grep finds candidates, not verdicts: read every hit
 ```bash
 cd ~/Documents/Github/ada-agent-fe
 
-# Pills. Every radius is 2px.
-grep -rnE 'rounded-(full|none)' src
+# Hard edges. Every bordered box has a radius; rounded-full is the send button only,
+# and rounded-none only the field inside the composer box.
+grep -rnE 'rounded-(full|none)|border-l-2' src
 
 # Hard-coded colours. Tokens only; the sprite frames are the exception.
 grep -rnE '#[0-9a-fA-F]{3,8}\b' src --include='*.tsx' --include='*.ts' | grep -v chak-sprite-frames
@@ -16,13 +17,16 @@ grep -rnE '#[0-9a-fA-F]{3,8}\b' src --include='*.tsx' --include='*.ts' | grep -v
 # Geist Pixel was dropped. Nothing should ask for it.
 grep -rn 'font-pixel\|Geist Pixel' src
 
-# Below the 11px floor for machine text.
-grep -rnoE 'text-\[(9|10|10\.5)px\]' src
+# Below the 12px floor (raw code, font-mono, may be 11.5px).
+grep -rnoE 'text-\[(9|10|10\.5|11|11\.5)px\]' src
+
+# Monospace outside raw code. Only the trace's JSON <pre> and inline code in answers.
+grep -rn 'font-mono' src --include='*.tsx'
 
 # New motion. The only keyframe is chak-think in index.css.
 grep -rnE '@keyframes|animate-|transition-(all|transform|opacity)' src
 
-# Accent outside its four jobs (links, Send, active-iteration marker, focus rings).
+# Accent outside its five jobs (links, Send, active-iteration marker, focus rings, section titles via <Highlight>).
 grep -rnoE '(text|bg|border|ring|decoration)-(accent-ink|primary)\b' src
 
 # Fonts are self-hosted through Fontsource.
@@ -47,10 +51,10 @@ Flag new hits. Leave these alone unless the user asks.
 
 ## By eye
 
-- [ ] Every new piece of text is in one register (sans for prose and interface, mono for the machine record), and the register matches whether a person or the machine produced it.
+- [ ] Every new piece of text is in Geist; `font-mono` only for raw code (JSON, inline code in answers). Whether a person or the machine produced it.
 - [ ] Trace rows, tool names, JSON, paths, and timings are literal. No character in the record.
 - [ ] Danger ink only where something failed or the Worker acted, and every flag has a word, not just a colour.
-- [ ] Any new button is outline or ghost unless it's Send. Nothing new is accent-filled.
+- [ ] Any new button is outline or ghost unless it's Send, or one of the approval card's semantic three (green `success` files, soft `destructive` declines). Nothing new is accent-filled, and green means a confirming action, never decoration.
 - [ ] Touch targets are 44px under `pointer-coarse:` without changing the desktop look.
 - [ ] Inputs are `text-base` below `sm`.
 - [ ] The sprite is at a multiple of 16px, `aria-hidden`, with "Chak" printed beside it.

@@ -9,6 +9,7 @@ import { TurnView } from './turn'
 import { useAsk } from './use-ask'
 import { ConversationMenu } from './conversation-menu'
 import { useConversations } from './use-conversations'
+import { Highlight } from '@/components/highlight'
 
 const HEADING = 'A helpdesk cat who shows his work.'
 
@@ -21,9 +22,9 @@ function Greeting() {
       <ChakSprite size={64} />
       <h1
         id="hero-heading"
-        className="mt-5 max-w-[20ch] text-[30px] leading-[1.15] font-semibold tracking-tight text-ink sm:text-[40px]"
+        className="mt-5 max-w-[20ch] text-[30px] leading-[1.15] font-semibold tracking-tight sm:text-[40px]"
       >
-        {HEADING}
+        <Highlight>{HEADING}</Highlight>
       </h1>
       <p className="mt-3 max-w-[46ch] text-[16px] leading-relaxed text-ink-2 sm:text-[17px]">
         I built Chak to answer IT helpdesk questions with real tools. Every tool call stays visible.
@@ -43,10 +44,10 @@ function SuggestedPrompts({ onPick }: { onPick: (prompt: string) => void }) {
             <button
               type="button"
               onClick={() => onPick(prompt.text)}
-              className="flex w-full flex-col items-start gap-1 rounded-sm border border-rule bg-surface px-3.5 py-3 text-left transition-colors hover:bg-accent-wash"
+              className="flex w-full flex-col items-start gap-1 rounded-xl border border-rule bg-surface px-3.5 py-3 text-left transition-colors hover:bg-accent-wash"
             >
               <span className="text-[14px] leading-snug text-ink">{prompt.text}</span>
-              <span className="font-mono text-[11px] text-ink-3">{prompt.exercises}</span>
+              <span className="text-[12px] text-ink-3">{prompt.exercises}</span>
             </button>
           </li>
         ))}
@@ -116,8 +117,8 @@ export function ChakConsole() {
         {/* Wraps the path under its label on a narrow phone. Side by side, the
             two were wider than a 320px screen and pushed the page sideways. */}
         <p className="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-0.5">
-          <span className="font-mono text-[11px] whitespace-nowrap text-ink-3">memory scope</span>
-          <code className="truncate font-mono text-[12px] text-ink-2">{instancePath(instance)}</code>
+          <span className="text-[12px] whitespace-nowrap text-ink-3">memory scope</span>
+          <code className="truncate text-[13px] text-ink-2">{instancePath(instance)}</code>
         </p>
         <div className="flex items-center gap-2">
           <ConversationMenu
@@ -130,7 +131,7 @@ export function ChakConsole() {
             variant="outline"
             size="sm"
             onClick={startNew}
-            className="font-mono text-[11.5px] pointer-coarse:h-11"
+            className="text-[12.5px] pointer-coarse:h-11"
           >
             <PlusIcon aria-hidden weight="bold" />
             New

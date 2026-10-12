@@ -3,6 +3,7 @@ import { ArrowUpRightIcon } from '@phosphor-icons/react'
 import { EVALS } from '@/lib/evals'
 import { AGENT, REPOS, SITE } from '@/lib/site'
 import { cn } from '@/lib/utils'
+import { Highlight } from '@/components/highlight'
 
 /** Where a part lives. `fe` paths are in this repo, the rest in the Worker's. */
 interface CodePath {
@@ -274,7 +275,7 @@ function PartPanel({ part }: { part: Part }) {
         <ol className="mt-6 space-y-4">
           {part.steps.map((step, index) => (
             <li key={step.label} className="grid grid-cols-[1.75rem_minmax(0,1fr)] gap-x-3">
-              <span className="font-mono text-[11px] tabular-nums text-ink-3">
+              <span className="text-[12px] tabular-nums text-ink-3">
                 {String(index + 1).padStart(2, '0')}
               </span>
               <div>
@@ -293,8 +294,8 @@ function PartPanel({ part }: { part: Part }) {
           <dl className="space-y-1.5 border-t border-rule pt-3">
             {part.facts.map((fact) => (
               <div key={fact.term} className="grid gap-x-3 sm:grid-cols-[7.5rem_minmax(0,1fr)]">
-                <dt className="font-mono text-[11px] text-ink-3">{fact.term}</dt>
-                <dd className="font-mono text-[11.5px] text-ink-2 [overflow-wrap:anywhere]">{fact.value}</dd>
+                <dt className="text-[12px] text-ink-3">{fact.term}</dt>
+                <dd className="text-[12.5px] text-ink-2 [overflow-wrap:anywhere]">{fact.value}</dd>
               </div>
             ))}
           </dl>
@@ -306,7 +307,7 @@ function PartPanel({ part }: { part: Part }) {
               const url = codeUrl(code)
               const label = `${code.fe ? 'ada-agent-fe' : 'ada-agent'}/${code.path}`
               return (
-                <li key={label} className="font-mono text-[11.5px] [overflow-wrap:anywhere]">
+                <li key={label} className="text-[12.5px] [overflow-wrap:anywhere]">
                   {url ? (
                     <a
                       href={url}
@@ -345,8 +346,8 @@ export function Architecture() {
   return (
     <section aria-labelledby="architecture-heading" className="border-t border-rule bg-surface">
       <div className="mx-auto max-w-[1240px] px-5 py-16 sm:px-8 lg:py-24">
-        <h2 id="architecture-heading" className="text-[30px] leading-[1.15] font-semibold tracking-tight text-ink sm:text-[36px]">
-          How Chak is built
+        <h2 id="architecture-heading" className="text-[30px] leading-[1.15] font-semibold tracking-tight sm:text-[36px]">
+          <Highlight>How Chak is built</Highlight>
         </h2>
         <p className="mt-4 max-w-[62ch] text-[17px] leading-[1.65] text-ink-2">
           Eight parts behind one request. Open one to see what happens there, in the order it happens.
@@ -364,12 +365,12 @@ export function Architecture() {
                   aria-controls={PANEL_ID}
                   onClick={() => toggle(part.id)}
                   className={cn(
-                    'flex h-full min-h-[4.5rem] w-full flex-col items-start justify-center gap-1 border bg-paper px-3 py-3 text-left transition-colors sm:px-4',
+                    'flex h-full min-h-[4.5rem] w-full flex-col items-start justify-center gap-1 rounded-xl border bg-paper px-3 py-3 text-left transition-colors sm:px-4',
                     active ? 'border-ink ring-1 ring-ink ring-inset' : 'border-rule-strong hover:border-ink',
                   )}
                 >
                   <span className="text-[15px] font-medium text-ink">{part.name}</span>
-                  <span className="max-w-full font-mono text-[11px] leading-snug text-ink-3 [overflow-wrap:anywhere]">
+                  <span className="max-w-full text-[12px] leading-snug text-ink-3 [overflow-wrap:anywhere]">
                     {part.gist}
                   </span>
                 </button>
@@ -389,7 +390,7 @@ export function Architecture() {
               role="region"
               aria-labelledby={`${PANEL_ID}-heading`}
               inert={!open}
-              className="mt-6 border border-rule bg-paper px-4 py-6 sm:px-6"
+              className="mt-6 rounded-2xl border border-rule bg-paper px-4 py-6 sm:px-6"
             >
               <PartPanel part={shown} />
             </div>

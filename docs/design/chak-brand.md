@@ -127,7 +127,7 @@ Replace `You are Ada, an internal helpdesk assistant…` with:
 
 ### Palette
 
-Orange replaces ultramarine as the single accent. The "one accent, four jobs" lock stays: links, the Send button, the active-iteration marker, focus rings.
+Orange replaces ultramarine as the single accent. The "one accent" lock stays. Its jobs: links, the Send button, the active-iteration marker, focus rings, and (since 2026-10-12) the highlighted section titles.
 
 **UI tokens** (`src/index.css :root`). Contrast is measured against `--paper #F6F6F5`.
 
@@ -153,11 +153,11 @@ Danger moves to crimson because the old red-orange sits too close in hue to the 
 
 ### Type
 
-Geist (prose, kickers, interface) and Geist Mono (machine record). Geist Pixel was dropped on 2026-10-11 at the user's request; the sprite stays pixel art, and the chat bubbles now carry who is speaking.
+Geist for everything since 2026-10-12, including the trace; Geist Mono only for raw code. Before that, Geist Mono was the machine record. Geist Pixel was dropped on 2026-10-11 at the user's request; the sprite stays pixel art, and the chat bubbles now carry who is speaking.
 
 ### Shape
 
-2px radius everywhere, unchanged.
+Radius: 2px everywhere at the time; since 2026-10-12, soft corners on one scale (see CLAUDE.md).
 
 ### Sprite
 

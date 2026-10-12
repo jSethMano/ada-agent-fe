@@ -121,10 +121,9 @@ src/
 
 ### Design notes
 
-One light theme, locked. Two type registers with one rule each: **Geist** for prose and
-interface (headlines, Chak's answers, section kickers, controls), **Geist Mono** for anything the
-machine emitted. In the chat, bubbles show who is speaking. Marmalade `#A84A0C` is the only accent and has exactly four jobs:
-links, the Send button, the multi-pass iteration count, and focus rings. Every radius is 2px.
+One light theme, locked. One face, **Geist**, for everything, including the trace; **Geist Mono**
+only for raw code (JSON payloads, inline code in answers). In the chat, bubbles show who is speaking. Marmalade `#A84A0C` is the only accent and has exactly five jobs:
+links, the Send button, the multi-pass iteration count, focus rings, and the highlighted section titles. Corners are soft (a 10px base scale, pills for badges).
 
 Chak himself is a 16×16 pixel sprite, rendered only at multiples of 16px. His character is a tone,
 kept professional: it lives in the page chrome and never in the trace or in his answers. Full brand

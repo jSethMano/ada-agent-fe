@@ -1,4 +1,5 @@
 import { SITE } from '@/lib/site'
+import { Highlight } from '@/components/highlight'
 
 export function BuildersNote() {
   return (
@@ -7,9 +8,9 @@ export function BuildersNote() {
         <div>
           <h2
             id="note-heading"
-            className="text-[30px] leading-[1.15] font-semibold tracking-tight text-ink sm:text-[36px]"
+            className="text-[30px] leading-[1.15] font-semibold tracking-tight sm:text-[36px]"
           >
-            What it actually does
+            <Highlight>What it actually does</Highlight>
           </h2>
 
           <div className="mt-6 space-y-5 text-[17px] leading-[1.65] text-ink-2">
@@ -39,14 +40,14 @@ export function BuildersNote() {
           <p className="text-[12px] font-medium tracking-wide text-ink-3">what is real</p>
           <dl className="mt-3 space-y-3.5 text-[13.5px] leading-relaxed">
             <div>
-              <dt className="font-mono text-[12px] text-ink">model, routing, memory</dt>
+              <dt className="text-[13px] text-ink">model, routing, memory</dt>
               <dd className="mt-0.5 text-ink-2">
                 Real. Live inference on Workers AI, real tool dispatch across Durable Objects, and
                 conversation history persisted per instance.
               </dd>
             </div>
             <div>
-              <dt className="font-mono text-[12px] text-ink">ticket data</dt>
+              <dt className="text-[13px] text-ink">ticket data</dt>
               <dd className="mt-0.5 text-ink-2">
                 Half real. Tickets 42 and 77 are seeded fixtures, but anything you file is written
                 to the IT sub-agent’s own storage and can be looked up afterwards, including from a
