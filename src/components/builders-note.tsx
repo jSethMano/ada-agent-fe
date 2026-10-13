@@ -50,8 +50,8 @@ export function BuildersNote() {
               <dt className="text-[13px] text-ink">ticket data</dt>
               <dd className="mt-0.5 text-ink-2">
                 Half real. Tickets 42 and 77 are seeded fixtures, but anything you file is written
-                to the IT sub-agent’s own storage and can be looked up afterwards, including from a
-                different conversation.
+                to the IT sub-agent’s own storage and can be looked up afterwards from the
+                conversation that filed it.
               </dd>
             </div>
           </dl>

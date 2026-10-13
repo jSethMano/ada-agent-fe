@@ -55,11 +55,11 @@ export const SITE = {
 
   /** The help-article search: EMBEDDING_MODEL, KB_DIMENSIONS, and
    *  KB_RESULT_LIMITS.articles in ada-agent/src/kb.ts, the index in its
-   *  wrangler.jsonc, and the files in its kb/articles/. `live` stays false until
-   *  the Worker with search_kb is deployed; until then the page says it is built
-   *  but not live. */
+   *  wrangler.jsonc, and the files in its kb/articles/. `live` is true from the
+   *  Worker deploy that ships search_kb (measured in iteration 4, 2026-10-13);
+   *  false makes the page say it is built but not live. */
   kb: {
-    live: false,
+    live: true,
     index: 'chak-kb',
     embeddingModel: '@cf/baai/bge-m3',
     dimensions: 1024,
@@ -106,23 +106,22 @@ export interface Capability {
 
 export const CAPABILITIES: readonly Capability[] = [
   {
-    title: 'Answers questions directly',
-    detail:
-      'An IT question that needs no data, such as what makes a strong password or how to clear a paper jam, gets a short answer straight from the model, with no ticket.',
-    mechanism: 'model only',
-    example: 'What makes a strong password?',
+    title: 'Answers from the help articles',
+    detail: `A how-to or troubleshooting question is searched against ${SITE.kb.articles} IT help articles first. He gives the steps of the one that fits and names it, and proposes a ticket only when the article says to, or you have already tried its steps. A question he can answer gets an answer, not a ticket.`,
+    mechanism: `search_kb → ${SITE.kb.index} · ${SITE.kb.embeddingModel.split('/').pop()}`,
+    example: "The VPN won't connect when I work from home. What should I try?",
   },
   {
     title: 'Looks up an IT ticket',
     detail:
-      'Fetches the status, title, and assignee for a ticket id from the IT sub-agent, plus the priority and triage of any ticket filed since triage began.',
+      'Fetches the status, title, assignee, priority, and triage of a ticket filed in this conversation, or of the demo tickets 42 and 77, from the IT sub-agent. Any other number gets the same reply as one that does not exist, so other visitors’ tickets cannot be read by guessing.',
     mechanism: 'lookup_ticket → ItAgent',
     example: 'Look up ticket 42',
   },
   {
     title: 'Lists your tickets',
     detail:
-      'Lists the tickets filed in this conversation, newest first, with their status and priority. Tickets filed in other conversations are not included: give him the number and he looks it up.',
+      'Lists the tickets filed in this conversation, newest first, with their status and priority. Tickets filed in other conversations are not included and cannot be looked up from here.',
     mechanism: 'list_my_tickets → ItAgent',
     example: 'What tickets have I filed?',
   },
@@ -152,10 +151,10 @@ export const CAPABILITIES: readonly Capability[] = [
     example: 'What was the status of that ticket again?',
   },
   {
-    title: 'Remembers tickets across conversations',
+    title: 'Keeps each conversation’s tickets to itself',
     detail:
-      'Filed tickets live in the IT sub-agent, not the conversation, so a new conversation can still find them. Every visitor shares that store.',
-    mechanism: 'ItAgent storage',
+      'Filed tickets live in the IT sub-agent, which every visitor shares, and each one records the conversation that filed it. Only that conversation can list it or look it up. Triage still compares a new ticket with everyone’s recent ones to spot a duplicate, which can show another ticket’s number, never what it says.',
+    mechanism: 'ItAgent storage · filedBy',
   },
   {
     title: 'Asks instead of guessing',
@@ -174,7 +173,7 @@ export const CAPABILITIES: readonly Capability[] = [
   {
     title: 'Declines what he cannot do',
     detail:
-      'He will not claim to send email, reset a password, or change a ticket himself. A request only IT staff can act on, such as a password reset or access, becomes a ticket for you to approve; changing, closing, or reassigning an existing ticket gets a plain no. He has three tools and says so.',
+      'He will not claim to send email, reset a password, or change a ticket himself. A request only IT staff can act on, such as a password reset or access, becomes a ticket for you to approve; changing, closing, or reassigning an existing ticket gets a plain no. He has four tools and says so.',
     mechanism: 'system prompt',
     example: 'Please close ticket 77.',
   },

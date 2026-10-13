@@ -84,6 +84,9 @@ One person can hold more than one role. An agent is also an employee when their 
   count as a check.
 - **ID.4** An employee can never see, or have Chak reveal, another person's ticket. This includes `lookup_ticket`: an
   employee looking up a ticket they did not file gets "not found or not yours", never its contents.
+  Met in the demo since 2026-10-12 (ada-agent `6222d8e`) for `lookup_ticket`, with the conversation as the owner
+  until sign-in exists. Triage can still show another ticket's id, never its contents (user decision; ada-agent
+  `docs/decisions.md`).
 - **ID.5** Every Chak action on a ticket runs with the signed-in employee's permissions, and is enforced in code.
   The model cannot widen them, whatever the message says.
 

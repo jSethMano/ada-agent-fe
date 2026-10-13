@@ -203,7 +203,11 @@ const PARTS: readonly Part[] = [
         label: 'Conversation',
         detail: `One ${AGENT.name} Durable Object per id keeps the last ${SITE.historyEntries} messages and any ticket waiting for approval, so a decision still works after a reload.`,
       },
-      { label: 'Ticket store', detail: 'One ItAgent Durable Object, shared by every conversation, keeps the filed tickets.' },
+      {
+        label: 'Ticket store',
+        detail:
+          'One ItAgent Durable Object, shared by every conversation, keeps the filed tickets. Each records the conversation that filed it, and only that conversation can list it or look it up.',
+      },
       { label: 'Browser', detail: 'Past conversations and their traces stay in this browser and can be resumed from History.' },
       { label: 'Edge', detail: 'The edge Worker keeps nothing.' },
     ],

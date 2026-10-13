@@ -4,7 +4,19 @@ import { TriageLine } from '@/features/chat/approval-card'
 import { Notice } from '@/features/chat/notice'
 import { Trace } from '@/features/chat/trace'
 import { ChakReply, VisitorMessage } from '@/features/chat/turn'
-import { EVALS, FEATURED_COPY, percent, type EvalRequest, type EvalRun, type EvalSide, type EvalStep } from '@/lib/evals'
+import {
+  EVALS,
+  FEATURED_COPY,
+  MISSING_REASON,
+  percent,
+  type EvalMethod,
+  type EvalMissing,
+  type EvalNewCases,
+  type EvalRequest,
+  type EvalRun,
+  type EvalSide,
+  type EvalStep,
+} from '@/lib/evals'
 import { PUBLISHED_REPOS } from '@/lib/site'
 import { cn } from '@/lib/utils'
 import { Highlight } from '@/components/highlight'
@@ -28,17 +40,21 @@ function runDate(run: EvalRun): string {
   return new Date(run.startedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' })
 }
 
+/** "iteration 3" → "Iteration 3", for a run label that opens a sentence. */
+function sentenceStart(text: string): string {
+  return text.charAt(0).toUpperCase() + text.slice(1)
+}
+
 /** Below sm only the first and last runs fit a 320px row, so the ones between
  *  step aside there. The table keeps every run from sm up. */
 function between(index: number, count: number) {
   return index > 0 && index < count - 1 ? 'hidden sm:table-cell' : undefined
 }
 
-function ResultsTable() {
-  const { runs, method } = EVALS
+function ResultsTable({ runs, method, caption }: { runs: EvalRun[]; method: EvalMethod; caption: string }) {
   return (
     <table className="mt-5 w-full border-collapse text-left">
-      <caption className="sr-only">Eval results by run. Each cell is passed over graded.</caption>
+      <caption className="sr-only">{caption} Each cell is passed over graded.</caption>
       <thead>
         <tr className="border-b border-rule-strong">
           <th scope="col" className="py-2 pr-3 align-bottom text-[12.5px] font-normal text-ink-3">
@@ -54,6 +70,9 @@ function ResultsTable() {
               <span className="block text-[12px] text-ink-3">
                 {runDate(run)} · {run.commit}
               </span>
+              {run.missing && (
+                <span className="block text-[12px] text-ink-3">incomplete · {run.missing.runs} runs missing</span>
+              )}
             </th>
           ))}
         </tr>
@@ -102,6 +121,60 @@ function ResultsTable() {
         })}
       </tbody>
     </table>
+  )
+}
+
+/** Says which runs a table is missing and why, so a smaller denominator is
+ *  never read as a better score. Nothing when every run was graded. */
+function MissingNote({ runs }: { runs: EvalRun[] }) {
+  const short = runs.filter((run): run is EvalRun & { missing: EvalMissing } => Boolean(run.missing))
+  if (short.length === 0) return null
+  return (
+    <p className="mt-3 max-w-[62ch] text-[12.5px] leading-relaxed text-ink-3">
+      {short.map((run) => (
+        <span key={run.file} className="block">
+          Incomplete: in {run.label}, {MISSING_REASON[run.missing.reason]} before {run.missing.runs} of its runs of
+          these cases could finish, so its column is graded out of fewer runs. A missing run counts as neither passed
+          nor failed.
+        </span>
+      ))}
+    </p>
+  )
+}
+
+/** The cases only the newer run has, one line each: what it checks, and how
+ *  many of its runs passed. */
+function NewCasesList({ block }: { block: EvalNewCases }) {
+  return (
+    <div className="mt-8">
+      <h4 className="text-[13.5px] font-medium text-ink">New in {block.label}: the help-article cases</h4>
+      <p className="mt-1 max-w-[62ch] text-[12.5px] leading-relaxed text-ink-3">
+        Earlier runs have no runs of these. The right article was among the top 3 results in{' '}
+        {block.retrieval.passed} of {block.retrieval.graded} searches.
+      </p>
+      <ul className="mt-3 divide-y divide-rule border-y border-rule">
+        {block.cases.map((item) => {
+          const allPassed = item.passed === item.runs
+          return (
+            <li key={item.caseId} className="flex items-start justify-between gap-4 py-2.5">
+              <span className="min-w-0">
+                <code className="block text-[13px] text-ink-2 [overflow-wrap:anywhere]">{item.caseId}</code>
+                <span className="mt-0.5 block text-[12.5px] leading-snug text-ink-3">{item.why}</span>
+              </span>
+              <span className={cn('shrink-0 text-right text-[13px] tabular-nums', allPassed ? 'text-ink' : 'text-danger')}>
+                {item.passed}/{item.runs}
+                <span className="block text-[12px] text-ink-3">{item.runs === 1 ? 'run' : 'runs'} passed</span>
+              </span>
+            </li>
+          )
+        })}
+      </ul>
+      {block.missing && (
+        <p className="mt-2 text-[12.5px] leading-relaxed text-ink-3">
+          {block.missing.runs} of these runs are missing: {MISSING_REASON[block.missing.reason]}.
+        </p>
+      )}
+    </div>
   )
 }
 
@@ -277,12 +350,12 @@ function ReplayConsole({ kind, side }: { kind: 'before' | 'after'; side: EvalSid
 }
 
 export function EvalResults() {
-  const { method, featured } = EVALS
+  const { method, runs, featured, comparisons = [] } = EVALS
   const worker = PUBLISHED_REPOS[0]
   const links = worker
     ? [
         { label: 'Iteration log', href: `${worker.url}/blob/main/evals/ITERATIONS.md` },
-        { label: 'All 50 cases', href: `${worker.url}/blob/main/evals/cases.ts` },
+        { label: 'All cases', href: `${worker.url}/blob/main/evals/cases.ts` },
         { label: 'Run reports', href: `${worker.url}/tree/main/evals/results` },
       ]
     : []
@@ -294,7 +367,7 @@ export function EvalResults() {
           <Highlight>How he's measured</Highlight>
         </h2>
         <p className="mt-4 max-w-[62ch] text-[17px] leading-[1.65] text-ink-2">
-          Each change to Chak is run against {method.cases} written cases, {method.liveReps} times each,
+          Each change to Chak is run against written cases, the live ones {method.liveReps} times each,
           and every run is graded from the trace he returns. Nothing below is typed in: the numbers and
           traces are exported from the saved runs.
         </p>
@@ -310,12 +383,31 @@ export function EvalResults() {
         <div className="mt-12 grid grid-cols-1 gap-x-10 gap-y-10 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
           <div className="min-w-0">
             <h3 className={KICKER}>results by run</h3>
-            <ResultsTable />
+            <ResultsTable runs={runs} method={method} caption="Eval results by run." />
             <p className="mt-3 max-w-[62ch] text-[12.5px] leading-relaxed text-ink-3">
               Every column is graded with the same answer key, and a corrected label is applied to
               earlier runs too. Iteration 1 is left out: the free model allowance ran out, so only one of
               its three runs could be measured.
             </p>
+            <MissingNote runs={runs} />
+
+            {comparisons.map((comparison) => (
+              <div key={comparison.id} className="mt-14">
+                <h3 className={KICKER}>{comparison.title.split(':')[0].toLowerCase()}</h3>
+                <p className="mt-4 max-w-[62ch] text-[14px] leading-relaxed text-ink-2">
+                  The {comparison.method.cases} cases both runs share, graded with today’s answer key, which
+                  expects a search before a how-to answer. {sentenceStart(comparison.runs[0]?.label ?? 'the older run')} is regraded with it too,
+                  so it loses runs for not searching before search existed.
+                </p>
+                <p className="mt-2 text-[12.5px] leading-relaxed text-ink-3">
+                  {comparison.method.cases} cases · {comparison.method.steps} steps · {comparison.method.liveReps}{' '}
+                  runs per live case · grader {comparison.method.grading.grader}
+                </p>
+                <ResultsTable runs={comparison.runs} method={comparison.method} caption={`${comparison.title}.`} />
+                <MissingNote runs={comparison.runs} />
+                {comparison.newCases && <NewCasesList block={comparison.newCases} />}
+              </div>
+            ))}
           </div>
 
           <div className="min-w-0">
@@ -326,7 +418,7 @@ export function EvalResults() {
                 Whether he answered, asked, or declined is judged by a second model. Below its confidence
                 floor a step is counted as ungraded, never as passed.
               </li>
-              <li>Fifty cases is enough to catch a regression, not to put a precise number on accuracy.</li>
+              <li>A few dozen cases is enough to catch a regression, not to put a precise number on accuracy.</li>
             </ul>
             {links.length > 0 && (
               <ul className="mt-5 space-y-1.5">
