@@ -26,6 +26,10 @@ grep -rn 'font-mono' src --include='*.tsx'
 # New motion. The only keyframe is chak-think in index.css.
 grep -rnE '@keyframes|animate-|transition-(all|transform|opacity)' src
 
+# Recharts animates in JS, which the reduced-motion rule cannot stop. In each file, the count of marks and
+# tooltips must equal the count of isAnimationActive={false} (comments excluded).
+for f in $(grep -rl "from 'recharts'" src); do echo "$f $(grep -cE '<(Area|Line|Bar|ChartTooltip)\b' $f) $(grep -v '^ *\*' $f | grep -c 'isAnimationActive={false}')"; done
+
 # Accent outside its five jobs (links, Send, active-iteration marker, focus rings, section titles via <Highlight>).
 grep -rnoE '(text|bg|border|ring|decoration)-(accent-ink|primary)\b' src
 

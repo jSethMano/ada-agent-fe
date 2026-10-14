@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react'
 import { ArrowUpIcon, ArrowUpRightIcon, CheckIcon, XIcon } from '@phosphor-icons/react'
 import { Answer } from '@/features/chat/answer'
 import { TriageLine } from '@/features/chat/approval-card'
@@ -5,10 +6,15 @@ import { Notice } from '@/features/chat/notice'
 import { Trace } from '@/features/chat/trace'
 import { ChakReply, VisitorMessage } from '@/features/chat/turn'
 import {
+  ANSWER_KEYS,
+  CHART_LEFT_OUT,
+  CHART_SERIES,
   EVALS,
   FEATURED_COPY,
   MISSING_REASON,
   percent,
+  runDate,
+  sentenceCase,
   type EvalMethod,
   type EvalMissing,
   type EvalNewCases,
@@ -20,6 +26,12 @@ import {
 import { PUBLISHED_REPOS } from '@/lib/site'
 import { cn } from '@/lib/utils'
 import { Highlight } from '@/components/highlight'
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
+
+// Recharts and Radix Select are the page's largest dependencies, and this
+// section is far below the fold, so the chart loads on its own chunk. The
+// fallback is the empty frame at the chart's height.
+const EvalChart = lazy(() => import('@/components/eval-chart'))
 
 const CATEGORY_LABEL: Record<string, string> = {
   normal_it: 'normal IT',
@@ -35,15 +47,6 @@ const CATEGORY_LABEL: Record<string, string> = {
 const STATUS_WORD: Record<string, string> = { pass: 'pass', fail: 'fail', known_gap: 'known gap', ungraded: 'ungraded' }
 
 const KICKER = 'border-b border-rule-strong pb-2 text-[12px] font-medium tracking-wide text-ink-3'
-
-function runDate(run: EvalRun): string {
-  return new Date(run.startedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' })
-}
-
-/** "iteration 3" → "Iteration 3", for a run label that opens a sentence. */
-function sentenceStart(text: string): string {
-  return text.charAt(0).toUpperCase() + text.slice(1)
-}
 
 /** Below sm only the first and last runs fit a 320px row, so the ones between
  *  step aside there. The table keeps every run from sm up. */
@@ -124,8 +127,8 @@ function ResultsTable({ runs, method, caption }: { runs: EvalRun[]; method: Eval
   )
 }
 
-/** Says which runs a table is missing and why, so a smaller denominator is
- *  never read as a better score. Nothing when every run was graded. */
+/** Says which runs are missing and why, so a smaller denominator is never
+ *  read as a better score. Nothing when every run was graded. */
 function MissingNote({ runs }: { runs: EvalRun[] }) {
   const short = runs.filter((run): run is EvalRun & { missing: EvalMissing } => Boolean(run.missing))
   if (short.length === 0) return null
@@ -134,10 +137,39 @@ function MissingNote({ runs }: { runs: EvalRun[] }) {
       {short.map((run) => (
         <span key={run.file} className="block">
           Incomplete: in {run.label}, {MISSING_REASON[run.missing.reason]} before {run.missing.runs} of its runs of
-          these cases could finish, so its column is graded out of fewer runs. A missing run counts as neither passed
-          nor failed.
+          these cases could finish, so it is graded out of fewer runs. A missing run counts as neither passed nor
+          failed.
         </span>
       ))}
+    </p>
+  )
+}
+
+/** "A, b, and c", for metric labels inside a sentence. */
+function listLabels(labels: string[]): string {
+  const words = labels.map((label, index) => (index === 0 ? label : label.charAt(0).toLowerCase() + label.slice(1)))
+  return words.length <= 2 ? words.join(' and ') : `${words.slice(0, -1).join(', ')}, and ${words[words.length - 1]}`
+}
+
+/** Names the metrics the chart leaves to the tables, and why. Built from the
+ *  export, so it stays true after the next one. */
+function LeftOutNote() {
+  const { neverFailed, oneRun } = CHART_LEFT_OUT
+  if (neverFailed.length === 0 && oneRun.length === 0) return null
+  return (
+    <p className="mt-3 max-w-[62ch] text-[12.5px] leading-relaxed text-ink-3">
+      {neverFailed.length > 0 && (
+        <span className="block">
+          {listLabels(neverFailed.map((metric) => metric.label))} never failed a graded check, so only the tables
+          have {neverFailed.length === 1 ? 'it' : 'them'}.
+        </span>
+      )}
+      {oneRun.length > 0 && (
+        <span className="block">
+          {listLabels(oneRun.map((metric) => metric.label))} {oneRun.length === 1 ? 'has' : 'have'} one graded run
+          per answer key at most, so only the tables have {oneRun.length === 1 ? 'it' : 'them'}.
+        </span>
+      )}
     </p>
   )
 }
@@ -350,7 +382,8 @@ function ReplayConsole({ kind, side }: { kind: 'before' | 'after'; side: EvalSid
 }
 
 export function EvalResults() {
-  const { method, runs, featured, comparisons = [] } = EVALS
+  const { method, featured, comparisons = [] } = EVALS
+  const latest = comparisons[comparisons.length - 1]
   const worker = PUBLISHED_REPOS[0]
   const links = worker
     ? [
@@ -383,31 +416,60 @@ export function EvalResults() {
         <div className="mt-12 grid grid-cols-1 gap-x-10 gap-y-10 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
           <div className="min-w-0">
             <h3 className={KICKER}>results by run</h3>
-            <ResultsTable runs={runs} method={method} caption="Eval results by run." />
-            <p className="mt-3 max-w-[62ch] text-[12.5px] leading-relaxed text-ink-3">
-              Every column is graded with the same answer key, and a corrected label is applied to
-              earlier runs too. Iteration 1 is left out: the free model allowance ran out, so only one of
-              its three runs could be measured.
+            <Suspense
+              fallback={<div className="mt-5 h-[440px] rounded-2xl border border-rule bg-surface sm:h-[383px]" />}
+            >
+              <EvalChart />
+            </Suspense>
+            <p className="mt-4 max-w-[62ch] text-[12.5px] leading-relaxed text-ink-3">
+              Each line is graded with one answer key, and a corrected label is applied to earlier runs too, so
+              a line compares like with like. The lines are never joined.
+              {latest && (
+                <>
+                  {' '}
+                  The current key grades the {latest.method.cases} cases both its runs share and expects a search
+                  before a how-to answer, so {latest.runs[0]?.label ?? 'the older run'}, regraded with it, loses
+                  runs for not searching before search existed.
+                </>
+              )}{' '}
+              Iteration 1 is left out: the free model allowance ran out, so only one of its three runs could be
+              measured.
             </p>
-            <MissingNote runs={runs} />
+            <MissingNote runs={ANSWER_KEYS.flatMap((key) => key.runs)} />
+            <LeftOutNote />
 
-            {comparisons.map((comparison) => (
-              <div key={comparison.id} className="mt-14">
-                <h3 className={KICKER}>{comparison.title.split(':')[0].toLowerCase()}</h3>
-                <p className="mt-4 max-w-[62ch] text-[14px] leading-relaxed text-ink-2">
-                  The {comparison.method.cases} cases both runs share, graded with today’s answer key, which
-                  expects a search before a how-to answer. {sentenceStart(comparison.runs[0]?.label ?? 'the older run')} is regraded with it too,
-                  so it loses runs for not searching before search existed.
-                </p>
-                <p className="mt-2 text-[12.5px] leading-relaxed text-ink-3">
-                  {comparison.method.cases} cases · {comparison.method.steps} steps · {comparison.method.liveReps}{' '}
-                  runs per live case · grader {comparison.method.grading.grader}
-                </p>
-                <ResultsTable runs={comparison.runs} method={comparison.method} caption={`${comparison.title}.`} />
-                <MissingNote runs={comparison.runs} />
-                {comparison.newCases && <NewCasesList block={comparison.newCases} />}
-              </div>
-            ))}
+            {/* The numbers behind the chart, every metric, with definitions
+                and denominators: the chart's table view. */}
+            <Accordion type="single" collapsible className="mt-6 border-y border-rule">
+              <AccordionItem value="numbers" className="border-rule">
+                <AccordionTrigger className="items-center py-3 text-[13.5px] text-ink">
+                  All metrics, as numbers
+                </AccordionTrigger>
+                <AccordionContent className="pb-6">
+                  {ANSWER_KEYS.map((key, index) => {
+                    const series = CHART_SERIES.find((item) => item.id === key.id)
+                    return (
+                      <div key={key.id} className={index > 0 ? 'mt-10' : 'mt-2'}>
+                        <div>
+                          <h4 className="text-[13.5px] font-medium text-ink">
+                            {sentenceCase(series?.label ?? key.title)}
+                          </h4>
+                          <p className="mt-1 text-[12.5px] leading-relaxed text-ink-3">
+                            {key.method.cases} cases · {key.method.steps} steps · {key.method.liveReps} runs per
+                            live case · grader {key.method.grading.grader}
+                          </p>
+                        </div>
+                        <ResultsTable runs={key.runs} method={key.method} caption={`${key.title}.`} />
+                      </div>
+                    )
+                  })}
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+
+            {comparisons.map(
+              (comparison) => comparison.newCases && <NewCasesList key={comparison.id} block={comparison.newCases} />,
+            )}
           </div>
 
           <div className="min-w-0">

@@ -171,3 +171,171 @@ export const MISSING_REASON: Record<EvalMissing['reason'], string> = {
 export function percent({ passed, graded }: { passed: number; graded: number }): string {
   return graded === 0 ? '—' : `${((passed / graded) * 100).toFixed(1)}%`
 }
+
+/** "Oct 10", the day a run started. */
+export function runDate(run: { startedAt: string }): string {
+  return new Date(run.startedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' })
+}
+
+/*
+ * The results chart (docs/design/eval-chart.md). It plots the share of graded
+ * results that failed, from 0, so an area is honest: pass rates sit near the
+ * top and would read as flat. One line per answer key, never joined: a run
+ * regraded with a newer key keeps its startedAt, which is where two lines meet.
+ */
+
+export interface ChartSeries {
+  id: string
+  label: string
+  /** The newest key leads; older keys are context. */
+  emphasis: boolean
+  /** Ink for the lead, ink-3 dashed for context. No chart hue: the accent has
+   *  five jobs and data is not one of them. */
+  color: string
+  dash?: string
+}
+
+export interface ChartPoint {
+  failed: number
+  graded: number
+  ungraded: number
+  /** Percent failed, 0 to 100. */
+  rate: number
+  missing?: EvalMissing
+}
+
+export interface ChartRow {
+  startedAt: string
+  label: string
+  /** The label as it fits a 320px axis: "iter 3". */
+  short: string
+  date: string
+  commit: string
+  /** Set when this run is incomplete under any key. */
+  missing?: EvalMissing
+  /** By series id. Undefined where that key has no graded run. */
+  points: Record<string, ChartPoint | undefined>
+}
+
+/** Every answer key the export graded with, oldest first. Each is its own
+ *  table and its own line on the chart. */
+export const ANSWER_KEYS: Array<{ id: string; title: string; runs: EvalRun[]; method: EvalMethod }> = [
+  { id: 'earlier', title: 'Eval results by run', runs: EVALS.runs, method: EVALS.method },
+  ...(EVALS.comparisons ?? []).map((comparison) => ({
+    id: comparison.id,
+    title: comparison.title,
+    runs: comparison.runs,
+    method: comparison.method,
+  })),
+]
+
+export const CHART_SERIES: ChartSeries[] = ANSWER_KEYS.map((key, index) => {
+  const newest = index === ANSWER_KEYS.length - 1
+  return {
+    id: key.id,
+    label:
+      ANSWER_KEYS.length === 1
+        ? 'answer key'
+        : newest
+          ? 'current answer key'
+          : ANSWER_KEYS.length === 2
+            ? 'earlier answer key'
+            : `earlier answer key ${index + 1}`,
+    emphasis: newest,
+    color: newest ? 'var(--ink)' : 'var(--ink-3)',
+    dash: newest ? undefined : '4 3',
+  }
+})
+
+function chartPoint(run: EvalRun, metricId: string): ChartPoint | undefined {
+  const tally = run.metrics[metricId]
+  if (!tally || tally.graded === 0) return undefined
+  const failed = tally.graded - tally.passed
+  return {
+    failed,
+    graded: tally.graded,
+    ungraded: tally.ungraded,
+    rate: (failed / tally.graded) * 100,
+    missing: run.missing,
+  }
+}
+
+/** Every run under every key, one row per startedAt, oldest first. */
+export function chartRows(metricId: string): ChartRow[] {
+  const rows = new Map<string, ChartRow>()
+  for (const key of ANSWER_KEYS) {
+    for (const run of key.runs) {
+      const row = rows.get(run.startedAt) ?? {
+        startedAt: run.startedAt,
+        label: run.label,
+        short: run.label.replace(/^iteration /, 'iter '),
+        date: runDate(run),
+        commit: run.commit,
+        points: {},
+      }
+      row.points[key.id] = chartPoint(run, metricId)
+      row.missing ??= run.missing
+      rows.set(run.startedAt, row)
+    }
+  }
+  return [...rows.values()].sort((a, b) => a.startedAt.localeCompare(b.startedAt))
+}
+
+/** A metric earns a chart when some key has two graded runs of it and
+ *  something failed it. Otherwise the line would say nothing the table
+ *  doesn't, so only the table has it. */
+function chartable(metricId: string): 'yes' | 'never-failed' | 'one-run' {
+  const rows = chartRows(metricId)
+  const points = rows.flatMap((row) => Object.values(row.points).filter((point) => point !== undefined))
+  if (!points.some((point) => point.failed > 0)) return 'never-failed'
+  const twoRuns = ANSWER_KEYS.some((key) => rows.filter((row) => row.points[key.id]).length >= 2)
+  return twoRuns ? 'yes' : 'one-run'
+}
+
+const NEWEST_METRICS = ANSWER_KEYS[ANSWER_KEYS.length - 1].method.metrics
+
+/** The metrics the chart offers, in the newest key's order. */
+export const CHART_METRICS = NEWEST_METRICS.filter((metric) => chartable(metric.id) === 'yes')
+
+/** The metrics left to the table, grouped by why. */
+export const CHART_LEFT_OUT = {
+  neverFailed: NEWEST_METRICS.filter((metric) => chartable(metric.id) === 'never-failed'),
+  oneRun: NEWEST_METRICS.filter((metric) => chartable(metric.id) === 'one-run'),
+}
+
+/** The top of the y axis: the highest share failed on any metric the chart
+ *  offers, rounded up to 5, so switching metrics never rescales it. */
+export const CHART_MAX = Math.max(
+  5,
+  ...CHART_METRICS.flatMap((metric) =>
+    chartRows(metric.id).flatMap((row) =>
+      Object.values(row.points).map((point) => Math.ceil((point?.rate ?? 0) / 5) * 5),
+    ),
+  ),
+)
+
+/** "4.5%". */
+export function failedPercent(point: ChartPoint): string {
+  return `${point.rate.toFixed(1)}%`
+}
+
+/** The chart in one sentence per key, for a screen reader. */
+export function chartSummary(metricId: string): string {
+  const metric = NEWEST_METRICS.find((item) => item.id === metricId)
+  const rows = chartRows(metricId)
+  const lines = CHART_SERIES.map((series) => {
+    const values = rows.flatMap((row) => {
+      const point = row.points[series.id]
+      if (!point) return []
+      const short = point.missing ? `, incomplete with ${point.missing.runs} runs missing` : ''
+      return [`${failedPercent(point)} at ${row.label}${short}`]
+    })
+    return values.length > 0 ? `${sentenceCase(series.label)}: ${values.join(', ')}.` : ''
+  })
+  return [`${metric?.label ?? metricId}. Share that failed, by run.`, ...lines].filter(Boolean).join(' ')
+}
+
+/** "earlier answer key" → "Earlier answer key". */
+export function sentenceCase(text: string): string {
+  return text.charAt(0).toUpperCase() + text.slice(1)
+}
