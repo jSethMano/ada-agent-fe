@@ -57,9 +57,12 @@ export const SITE = {
    *  KB_RESULT_LIMITS.articles in ada-agent/src/kb.ts, the index in its
    *  wrangler.jsonc, and the files in its kb/articles/. `live` is true from the
    *  Worker deploy that ships search_kb (measured in iteration 4, 2026-10-13);
-   *  false makes the page say it is built but not live. */
+   *  false makes the page say it is built but not live. `demo` is true while
+   *  every file in kb/articles/ has `demo: true` in its front matter; an
+   *  opened article in the console says so. */
   kb: {
     live: true,
+    demo: true,
     index: 'chak-kb',
     embeddingModel: '@cf/baai/bge-m3',
     dimensions: 1024,

@@ -23,6 +23,7 @@ The change: $ARGUMENTS
 | `trace.tsx` | The trace header and one row component per row kind |
 | `approval-card.tsx` | The paused ticket: approve, edit, cancel, and the closed states |
 | `answer.tsx` | The small inline Markdown renderer for Chak's answers |
+| `help-articles.ts`, `article-sources.tsx` | The help articles a `search_kb` row returned: `searchedArticles()` reads them off the trace, `citedArticles()` keeps the ones the answer names, and `ArticleSources` renders them as badges under the bubble that open the article |
 | `composer.tsx`, `composer-draft.ts` | The input. Its draft is kept outside React state so a `CAPABILITIES` example further down the page can fill it |
 | `conversation-menu.tsx` | History: switch, delete, start a new conversation |
 | `suggested-prompts.ts` | The empty-state prompts, one per router path |

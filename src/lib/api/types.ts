@@ -51,6 +51,23 @@ export interface ToolCallEntry {
   fromText?: boolean
 }
 
+/** One help article a `search_kb` call returned, mirrored from `KbArticle` in
+ *  ada-agent/src/kb.ts. It arrives inside that tool row's `result`
+ *  (`{ result: { found, articles } }`), which stays `unknown` on the row:
+ *  `searchedArticles()` in features/chat/help-articles.ts reads it and drops
+ *  anything malformed. The Worker caps each section at 2,000 characters
+ *  (`KB_RESULT_LIMITS.sectionChars`), ending a cut one with "…". */
+export interface KbArticle {
+  id: string
+  title: string
+  /** Cosine similarity of the match, rounded to three places. */
+  score?: number
+  summary?: string
+  steps?: string
+  if_not?: string
+  file_ticket_when?: string
+}
+
 /** A Jev (TypeSafe System One) check. It records typed answers and
  *  probabilities; it only changes what the router does where the Worker has a
  *  rule for that, and then says so in `action`. */

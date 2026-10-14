@@ -24,6 +24,8 @@ Every Worker symbol this repo depends on, and where it's mirrored. Worker paths 
 | `Decision` and `parseDecision()` in `src/approval.ts` | `ApprovalDecision` in `types.ts`, `decide()` in `client.ts` | |
 | `notice` on the approval and answer bodies (`SECRET_NOTICE`, `sharedSecret()` in `src/secret-notice.ts`; set in `approvalView()` and `Chak.onRequest`) | `PendingApproval.notice`, the `notice` on `AskResponse`, `Turn.notice`, `post()` in `client.ts`, `onSuccess` in `use-ask.ts`, `Notice` in `src/features/chat/notice.tsx` | Optional and rendered verbatim. Kept on the turn after a decision. Non-string values are dropped in `post()` |
 | `TICKET_LIMITS` in `src/approval.ts` | `TITLE_MAX` and `DESCRIPTION_MAX` in `approval-card.tsx` | Literal copies |
+| `KbArticle` and `KbResult` in `src/kb.ts` (the `search_kb` tool row's `result`) | `KbArticle` in `src/lib/api/types.ts`; `searchedArticles()` in `src/features/chat/help-articles.ts`; `ArticlePanel` in `article-sources.tsx` | The row's `result` stays `unknown`. `searchedArticles()` unwraps `{ result }`, requires `id` and `title`, and drops a malformed article on its own. A new section field needs a `KB_SECTIONS` entry to render |
+| `KB_SECTIONS` in `src/kb.ts` | `KB_SECTIONS` in `help-articles.ts` | Literal copy: the headings and order of an opened article |
 
 ## Facts printed on the page
 
@@ -40,7 +42,7 @@ No test compares these with the Worker. The Worker's `test/skills.spec.ts` check
 | `HOLD` in `src/jev/triage-ticket.ts` | `SITE.triageHold` | `GUARDRAILS` |
 | `RATE_LIMITER` `simple` in `wrangler.jsonc` (also as a literal in `GUARDRAILS`) | `SITE.rateLimit` | the API part in `architecture.tsx` |
 | `MAX_HISTORY_ENTRIES` in `src/index.ts` | `SITE.historyEntries` | the State part in `architecture.tsx` |
-| `EMBEDDING_MODEL`, `KB_DIMENSIONS`, `KB_RESULT_LIMITS.articles` in `src/kb.ts`; the `chak-kb` index in `wrangler.jsonc`; the files in `kb/articles/` | `SITE.kb` (`live` flips to `true` when the Worker with `search_kb` deploys) | the Data, Models, and Workflow parts in `architecture.tsx` |
+| `EMBEDDING_MODEL`, `KB_DIMENSIONS`, `KB_RESULT_LIMITS.articles` in `src/kb.ts`; the `chak-kb` index in `wrangler.jsonc`; the files in `kb/articles/` | `SITE.kb` (`live` flips to `true` when the Worker with `search_kb` deploys; `demo` stays `true` while every article has `demo: true`, and prints "demo article" on an opened article) | the Data, Models, and Workflow parts in `architecture.tsx` |
 | `MAX_TRIAGE_CANDIDATES` in `src/index.ts` | `SITE.triageCandidates` | `CAPABILITIES` |
 | `derivePriority()` and `SECURITY_INCIDENT_ABOVE` in `src/jev/triage-ticket.ts` | The literal "a priority from P1 to P4, and a security incident is always P1" in the "Triages every ticket" entry of `CAPABILITIES` | Capabilities section. A change to the priority policy makes this sentence wrong, with nothing to flag it |
 | `MAX_QUESTION_LENGTH` in `src/index.ts` | Literal `'2,000 characters per question'` in `GUARDRAILS` | Capabilities section |

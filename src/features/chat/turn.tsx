@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { SITE } from '@/lib/site'
 import { Answer } from './answer'
 import { ApprovalCard } from './approval-card'
+import { ArticleSources } from './article-sources'
 import { Notice } from './notice'
 import { Trace } from './trace'
 import type { ApprovalDecision, Turn } from '@/lib/api/types'
@@ -115,6 +116,7 @@ export function TurnView({ turn, onRetry, onDecide, deciding, busy }: TurnViewPr
                 mono and stays outside it, so the bubble only ever holds what he
                 said. */}
             <Answer text={turn.answer ?? ''} />
+            <ArticleSources trace={turn.trace ?? []} answer={turn.answer ?? ''} />
             {turn.notice && <Notice text={turn.notice} />}
           </>
         )}

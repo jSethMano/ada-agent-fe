@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react'
 import { ArrowUpIcon, ArrowUpRightIcon, CheckIcon, XIcon } from '@phosphor-icons/react'
 import { Answer } from '@/features/chat/answer'
 import { TriageLine } from '@/features/chat/approval-card'
+import { ArticleSources } from '@/features/chat/article-sources'
 import { Notice } from '@/features/chat/notice'
 import { Trace } from '@/features/chat/trace'
 import { ChakReply, VisitorMessage } from '@/features/chat/turn'
@@ -305,7 +306,12 @@ function ReplayStep({ step, first, last }: { step: EvalStep; first: boolean; las
           approval={paused ? 'paused' : undefined}
         />
         {step.approval && <CardSnapshot approval={step.approval} ended={paused && last} />}
-        {step.answer !== undefined && <Answer text={step.answer} />}
+        {step.answer !== undefined && (
+          <>
+            <Answer text={step.answer} />
+            <ArticleSources trace={step.trace} answer={step.answer} />
+          </>
+        )}
         {step.notice && <Notice text={step.notice} />}
         {failed && step.error && (
           <p className="mt-3 rounded-xl bg-danger-wash px-3.5 py-3 text-[12.5px] leading-relaxed text-danger [overflow-wrap:anywhere]">
